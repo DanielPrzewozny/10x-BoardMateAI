@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 # 10x Astro Starter
 
 A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+=======
+## Project Description
+BoardMate AI is an application designed to help users find the perfect board game for any occasion by analyzing player preferences and suggesting the best games based on the number of participants, difficulty level, and gameplay style. It addresses the common issues of overwhelming choices, mismatched games, and lack of personalized recommendations.
+>>>>>>> 69502d7 (basic components added)
 
 ## Tech Stack
 
