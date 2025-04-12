@@ -1,99 +1,60 @@
-<<<<<<< HEAD
-# 10x Astro Starter
+# BoardMate AI
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
-=======
 ## Project Description
 BoardMate AI is an application designed to help users find the perfect board game for any occasion by analyzing player preferences and suggesting the best games based on the number of participants, difficulty level, and gameplay style. It addresses the common issues of overwhelming choices, mismatched games, and lack of personalized recommendations.
->>>>>>> 69502d7 (basic components added)
 
 ## Tech Stack
+- **Frontend:**
+  - [Astro 5](https://astro.build) for fast, efficient pages with minimal JavaScript.
+  - [React 19](https://reactjs.org) for interactivity.
+  - [TypeScript 5](https://www.typescriptlang.org) for static typing and better IDE support.
+  - [Tailwind 4](https://tailwindcss.com) for styling.
+  - [Shadcn/ui](https://ui.shadcn.com) for available React components.
+  
+- **Backend:**
+  - [Supabase](https://supabase.io) for PostgreSQL database and user authentication.
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- **AI:**
+  - [Openrouter.ai](https://openrouter.ai) for communication with various AI models.
 
-## Prerequisites
+- **CI/CD and Hosting:**
+  - [GitHub Actions](https://github.com/features/actions) for CI/CD pipelines.
+  - [DigitalOcean](https://www.digitalocean.com) for hosting via Docker images.
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
-
-## Getting Started
-
+## Getting Started Locally
+To set up the project locally, follow these steps:
 1. Clone the repository:
-
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
+   ```bash
+   git clone https://github.com/yourusername/boardmate-ai.git
+   cd boardmate-ai
+   ```
 2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Run the development server:
-
-```bash
-npm run dev
-```
-
-4. Build for production:
-
-```bash
-npm run build
-```
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
 ## Available Scripts
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the application for production.
+- `npm run start`: Starts the production server.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+## Project Scope
+The project will include:
+- A user account system for saving favorite games and preferences.
+- A user profile page for specifying player count, preferred playtime, and game types.
+- AI-generated game recommendations based on user preferences.
 
-## Project Structure
+**Exclusions:**
+- No integration with game review databases.
+- No direct ordering of games from the application.
+- No advanced game mechanics analysis for individual users.
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
-
-## AI Development Support
-
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
-
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
-
-### Cursor IDE
-
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+## Project Status
+The project is currently in development.
 
 ## License
-
-MIT
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
