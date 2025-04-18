@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import type { GameDescriptionCommand, GameDescriptionResponseDto } from '@/types';
+import type { GameDescriptionCommand, GameRecommendationsResponseDto } from '@/types';
 
 interface UseRecommendationsResult {
-  recommendations: GameDescriptionResponseDto | null;
+  recommendations: GameRecommendationsResponseDto | null;
   isLoading: boolean;
   error: string | null;
   getRecommendations: (data: GameDescriptionCommand) => Promise<void>;
 }
 
 export function useRecommendations(): UseRecommendationsResult {
-  const [recommendations, setRecommendations] = useState<GameDescriptionResponseDto | null>(null);
+  const [recommendations, setRecommendations] = useState<GameRecommendationsResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,4 +1,4 @@
- // Import the Database type from the appropriate file
+// Import the Database type from the appropriate file
 import type { Database } from './db/database.types'; // Adjust the path as necessary
 
 // Base database types
@@ -48,6 +48,22 @@ export type RecommendationDTO = {
     types: string[],
     complexity: number,
     description: string
+};
+
+// Game Recommendation DTO - pojedyncza rekomendacja gry
+export type GameRecommendation = {
+    title: string,
+    players: string,
+    duration: string,
+    types: string[],
+    complexity: number,
+    description: string,
+    imageUrl: string
+};
+
+// Lista rekomendacji gier
+export type GameRecommendationsResponseDto = {
+    recommendations: GameRecommendation[]
 };
 
 export interface PaginationDTO {

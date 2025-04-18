@@ -1,10 +1,10 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SaveRecommendationButton from '@/components/SaveRecommendationButton';
-import type { GameDescriptionResponseDto } from '@/types';
+import type { GameRecommendation, GameRecommendationsResponseDto } from '@/types';
 
 interface RecommendationListProps {
-  recommendations: GameDescriptionResponseDto | null;
+  recommendations: GameRecommendationsResponseDto | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -12,7 +12,7 @@ interface RecommendationListProps {
 export default function RecommendationList({ recommendations, isLoading, error }: RecommendationListProps) {
   if (isLoading) {
     return (
-      <div className="w-full max-w-2xl mx-auto mt-8">
+      <div className="w-full max-w-4xl mx-auto mt-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -28,7 +28,7 @@ export default function RecommendationList({ recommendations, isLoading, error }
 
   if (error) {
     return (
-      <div className="w-full max-w-2xl mx-auto mt-8">
+      <div className="w-full max-w-4xl mx-auto mt-8">
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Wystąpił błąd</CardTitle>
@@ -41,51 +41,22 @@ export default function RecommendationList({ recommendations, isLoading, error }
     );
   }
 
-  if (!recommendations) {
+  if (!recommendations || !recommendations.recommendations.length) {
     return null;
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8">
+    <div className="w-full max-w-4xl mx-auto mt-8">
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-start justify-between gap-4">
-          <div>
-            <CardTitle>Twoje rekomendacje</CardTitle>
-            <CardDescription>Na podstawie Twoich preferencji</CardDescription>
-          </div>
-          <SaveRecommendationButton recommendation={recommendations} />
+        <CardHeader>
+          <CardTitle>Twoje rekomendacje</CardTitle>
+          <CardDescription>Na podstawie Twoich preferencji</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3 bg-muted/40 rounded-lg">
-                <h3 className="text-sm font-medium">Liczba graczy</h3>
-                <p className="text-2xl font-bold">{recommendations.players}</p>
-              </div>
-              <div className="p-3 bg-muted/40 rounded-lg">
-                <h3 className="text-sm font-medium">Czas gry</h3>
-                <p className="text-2xl font-bold">{recommendations.duration} min</p>
-              </div>
-              <div className="p-3 bg-muted/40 rounded-lg">
-                <h3 className="text-sm font-medium">Poziom złożoności</h3>
-                <p className="text-2xl font-bold">{recommendations.complexity}/5</p>
-              </div>
-              <div className="p-3 bg-muted/40 rounded-lg">
-                <h3 className="text-sm font-medium">Typy gier</h3>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {recommendations.types.map((type) => (
-                    <Badge key={type} variant="secondary">{type}</Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t mt-4">
-              <h3 className="text-sm font-medium mb-2">Opis rekomendacji</h3>
-              <div className="whitespace-pre-line text-sm p-3 bg-muted/20 rounded-lg">
-                {recommendations.description}
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {recommendations.recommendations.map((recommendation, index) => (
+              <RecommendationCard key={index} recommendation={recommendation} />
+            ))}
           </div>
         </CardContent>
         <CardFooter>
@@ -95,5 +66,65 @@ export default function RecommendationList({ recommendations, isLoading, error }
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+interface RecommendationCardProps {
+  recommendation: GameRecommendation;
+}
+
+function RecommendationCard({ recommendation }: RecommendationCardProps) {
+  return (
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl">{recommendation.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-2 bg-muted/40 rounded-lg">
+              <h3 className="text-xs font-medium">Liczba graczy</h3>
+              <p className="text-base font-bold">{recommendation.players}</p>
+            </div>
+            <div className="p-2 bg-muted/40 rounded-lg">
+              <h3 className="text-xs font-medium">Czas gry</h3>
+              <p className="text-base font-bold">{recommendation.duration} min</p>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-xs font-medium mb-1">Złożoność</h3>
+            <div className="flex items-center">
+              <div className="flex-grow h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary rounded-full" 
+                  style={{width: `${(recommendation.complexity / 5) * 100}%`}}
+                />
+              </div>
+              <span className="ml-2 text-xs font-medium">{recommendation.complexity}/5</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-medium mb-1">Typy gier</h3>
+            <div className="flex flex-wrap gap-1">
+              {recommendation.types.map((type) => (
+                <Badge key={type} variant="secondary" className="text-xs">{type}</Badge>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-medium mb-1">Opis</h3>
+            <div className="text-xs p-2 bg-muted/20 rounded-lg max-h-36 overflow-y-auto">
+              {recommendation.description}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-0 flex justify-end">
+        <SaveRecommendationButton recommendation={recommendation} />
+      </CardFooter>
+    </Card>
   );
 } 
