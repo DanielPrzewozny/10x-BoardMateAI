@@ -1,0 +1,41 @@
+@host=https://your-project.supabase.co
+@anon_key=your-anon-key
+@auth_token=your-jwt-token
+@user_id=your-user-id
+@game_id=example-game-id
+
+### Get Favorite Games
+GET {{host}}/rest/v1/favorite_games
+?select=id,game_id,added_at,notes,game:board_games(id,title,complexity,min_players,max_players,duration,description)
+&user_id=eq.{{user_id}}
+&order=added_at.desc
+apikey: {{anon_key}}
+Authorization: Bearer {{auth_token}}
+
+### Add to Favorites
+POST {{host}}/rest/v1/favorite_games
+apikey: {{anon_key}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+Prefer: return=representation
+
+{
+    "user_id": "{{user_id}}",
+    "game_id": "{{game_id}}",
+    "notes": "Świetna gra!"
+}
+
+### Remove from Favorites
+DELETE {{host}}/rest/v1/favorite_games
+?user_id=eq.{{user_id}}
+&game_id=eq.{{game_id}}
+apikey: {{anon_key}}
+Authorization: Bearer {{auth_token}}
+
+### Check if Game is Favorite
+GET {{host}}/rest/v1/favorite_games
+?select=id
+&user_id=eq.{{user_id}}
+&game_id=eq.{{game_id}}
+apikey: {{anon_key}}
+Authorization: Bearer {{auth_token}} 

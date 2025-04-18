@@ -2,10 +2,20 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from './database.types';
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+// W Astro zmienne środowiskowe muszą mieć przedrostek PUBLIC_ aby były dostępne po stronie klienta
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91Y2F1Z2FyZ2F1Z2FyZ2F1Z2FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMxMzYxNjgsImV4cCI6MjAyODcxMjE2OH0.00000000000000000000000000000000';
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Sprawdzamy czy URL i klucz są dostępne
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase URL or Anon Key is missing. Check your environment variables.');
+}
+
+export const supabaseClient = createClient<Database>(
+  supabaseUrl,
+  supabaseAnonKey
+);
+
 export type SupabaseClient = typeof supabaseClient;
 
-export const DEFAULT_USER_ID = 'd9a4f816-0933-447c-9fb9-46b34b8094a2';
+export const DEFAULT_USER_ID = '486306e0-9c44-4a00-9161-8cbfda9e8939';

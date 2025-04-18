@@ -2,16 +2,8 @@ import * as crypto from 'crypto';
 import type { GameDescriptionCommand, GameDescriptionResponseDto, RecommendationErrorLogDto } from '../types';
 import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from '../db/supabase.client';
 import { z } from 'zod';
-
-/**
- * TODO: Przyszłe ulepszenia:
- * 1. Dodać konfigurację modelu AI (nazwa, parametry) przez zmienne środowiskowe
- * 2. Dodać więcej mocków dla różnych scenariuszy (różne typy gier, liczby graczy itp.)
- * 3. Dodać cache dla częstych zapytań
- * 4. Zaimplementować rate limiting dla użytkowników
- * 5. Dodać walidację typów gier (enum zamiast dowolnego stringa)
- * 6. Rozważyć asynchroniczne przetwarzanie długich zapytań
- */
+import { OpenRouterService } from './openrouter.service';
+import type { ResponseFormat } from './openrouter.types';
 
 const errorLogSchema = z.object({
   error_code: z.string().max(50),
@@ -36,31 +28,63 @@ export class RecommendationError extends Error {
 }
 
 export class RecommendationService {
-  constructor(private readonly db: SupabaseClient = supabaseClient) {}
+  private openRouterService: OpenRouterService;
+  private defaultModelName: string = "gpt-4o-mini";
+  private debugMode: boolean = true; // Włączamy tryb debugowania
+
+  constructor(
+    private readonly db: SupabaseClient = supabaseClient,
+    apiKey?: string
+  ) {
+    // Pobierz klucz API z zmiennych środowiskowych, jeśli nie został podany
+    const openRouterApiKey = apiKey || import.meta.env.PUBLIC_OPENROUTER_API_KEY;
+    
+    if (this.debugMode) {
+      console.log("Inicjalizacja RecommendationService z kluczem OpenRouter:", 
+        openRouterApiKey ? "Klucz dostępny" : "Brak klucza");
+    }
+    
+    if (!openRouterApiKey) {
+      throw new RecommendationError(
+        "Brak klucza API dla OpenRouter",
+        "OPENROUTER_API_KEY_MISSING"
+      );
+    }
+    
+    this.openRouterService = new OpenRouterService(
+      openRouterApiKey as string,
+      this.defaultModelName,
+      "Jesteś ekspertem od gier planszowych. Twoim zadaniem jest rekomendowanie gier planszowych na podstawie opisu preferencji użytkownika."
+    );
+  }
 
   private async logError(error: RecommendationError, description: string): Promise<void> {
-    const errorLog: ErrorLogInput = {
-      error_code: error.code,
-      error_message: error.message,
-      model: 'gpt-4',
-      description_hash: crypto.createHash('sha256').update(description).digest('hex'),
-      description_length: description.length,
-      user_id: DEFAULT_USER_ID
-    };
+    try {
+      const errorLog: ErrorLogInput = {
+        error_code: error.code,
+        error_message: error.message,
+        model: this.openRouterService.modelName,
+        description_hash: crypto.createHash('sha256').update(description).digest('hex'),
+        description_length: description.length,
+        user_id: DEFAULT_USER_ID
+      };
 
-    // Walidacja danych przed zapisem
-    const parseResult = errorLogSchema.safeParse(errorLog);
-    if (!parseResult.success) {
-      console.error('Błąd walidacji logu:', parseResult.error);
-      return;
-    }
+      // Walidacja danych przed zapisem
+      const parseResult = errorLogSchema.safeParse(errorLog);
+      if (!parseResult.success) {
+        console.error('Błąd walidacji logu:', parseResult.error);
+        return;
+      }
 
-    const { error: dbError } = await this.db
-      .from('recommendation_error_logs')
-      .insert(parseResult.data as RecommendationErrorLogDto);
+      const { error: dbError } = await this.db
+        .from('recommendation_error_logs')
+        .insert(parseResult.data as RecommendationErrorLogDto);
 
-    if (dbError) {
-      console.error('Błąd podczas zapisywania logu błędu:', dbError);
+      if (dbError) {
+        console.error('Błąd podczas zapisywania logu błędu:', dbError);
+      }
+    } catch (error) {
+      console.error('Wyjątek podczas zapisywania logu błędu:', error);
     }
   }
 
@@ -88,9 +112,9 @@ export class RecommendationService {
       );
     }
 
-    if (command.players && (command.players < 1 || command.players > 5)) {
+    if (command.players && (command.players < 1 || command.players > 12)) {
       throw new RecommendationError(
-        'Nieprawidłowa liczba graczy (zakres 1-5)',
+        'Nieprawidłowa liczba graczy (zakres 1-12)',
         'INVALID_PLAYERS_COUNT',
         { players: command.players }
       );
@@ -113,28 +137,140 @@ export class RecommendationService {
     }
   }
 
+  private generatePrompt(command: GameDescriptionCommand): string {
+    let prompt = `Potrzebuję rekomendacji gry planszowej na podstawie następujących preferencji:\n\n`;
+    prompt += `Opis preferencji: ${command.description}\n\n`;
+    
+    if (command.players) {
+      prompt += `Liczba graczy: ${command.players}\n`;
+    }
+    
+    if (command.duration) {
+      prompt += `Czas gry: ${command.duration} minut\n`;
+    }
+    
+    if (command.complexity) {
+      prompt += `Poziom złożoności: ${command.complexity}/5\n`;
+    }
+    
+    if (command.types && command.types.length > 0) {
+      prompt += `Preferowane typy gier: ${command.types.join(", ")}\n`;
+    }
+    
+    prompt += `\nZapewnij odpowiedź w formacie JSON z następującymi polami:
+1. players - liczba graczy (liczba całkowita)
+2. duration - czas gry w minutach (liczba całkowita)
+3. types - lista typów gry (tablica stringów)
+4. complexity - poziom złożoności w skali 1-5 (liczba całkowita)
+5. description - szczegółowy opis rekomendacji (string)
+
+Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tekstu.`;
+    
+    return prompt;
+  }
+
+  private getResponseFormat(): ResponseFormat {
+    // Uproszczony format JSON Schema
+    return {
+      type: "json_schema",
+      json_schema: {
+        name: "gameRecommendation",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            players: { type: "integer" },
+            duration: { type: "integer" },
+            types: { 
+              type: "array", 
+              items: { type: "string" } 
+            },
+            complexity: { type: "integer" },
+            description: { type: "string" }
+          },
+          required: ["players", "duration", "types", "complexity", "description"],
+          additionalProperties: false
+        }
+      }
+    };
+  }
+
+  private async parseAIResponse(jsonResponse: string): Promise<GameDescriptionResponseDto> {
+    try {
+      if (this.debugMode) {
+        console.log("Odpowiedź z OpenRouter:", jsonResponse);
+      }
+      
+      // Próba parsowania JSON
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(jsonResponse);
+      } catch (e) {
+        // Jeśli odpowiedź nie jest poprawnym JSON, spróbuj wyciągnąć JSON z tekstu
+        const jsonMatch = jsonResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsedResponse = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("Nie można znaleźć poprawnego formatu JSON w odpowiedzi");
+        }
+      }
+      
+      // Walidacja odpowiedzi
+      if (!parsedResponse.players || !parsedResponse.duration || !parsedResponse.types || 
+          !parsedResponse.complexity || !parsedResponse.description) {
+        throw new Error("Odpowiedź nie zawiera wszystkich wymaganych pól");
+      }
+      
+      return {
+        players: Number(parsedResponse.players),
+        duration: Number(parsedResponse.duration),
+        types: Array.isArray(parsedResponse.types) ? parsedResponse.types : [parsedResponse.types],
+        complexity: Number(parsedResponse.complexity),
+        description: String(parsedResponse.description)
+      };
+    } catch (error) {
+      if (this.debugMode) {
+        console.error("Błąd parsowania odpowiedzi AI:", error, "Oryginalna odpowiedź:", jsonResponse);
+      }
+      
+      throw new RecommendationError(
+        "Nie udało się przetworzyć odpowiedzi z modelu AI: " + (error instanceof Error ? error.message : String(error)),
+        "AI_RESPONSE_PARSE_ERROR",
+        { response: jsonResponse }
+      );
+    }
+  }
+
   async getRecommendations(command: GameDescriptionCommand): Promise<GameDescriptionResponseDto> {
     try {
       this.validateDescription(command);
-
-      // Mock implementacji AI
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Symulacja opóźnienia
       
-      const mockRecommendations: GameDescriptionResponseDto = {
-        players: command.players || 4,
-        duration: command.duration || 60,
-        types: command.types || ['strategy', 'family', 'card'],
-        complexity: command.complexity || 3,
-        description: `Na podstawie Twojego opisu, proponuję grę planszową, która:
-- Jest przeznaczona dla ${command.players || '2-4'} graczy
-- Trwa około ${command.duration || '60'} minut
-- Ma złożoność ${command.complexity || '3'}/5
-- Łączy elementy: ${(command.types || ['strategy', 'family', 'card']).join(', ')}
-
-Opis gry zawiera ${command.description.length} znaków.`
+      const prompt = this.generatePrompt(command);
+      
+      if (this.debugMode) {
+        console.log("Prompt do OpenRouter:", prompt);
+      }
+      
+      const responseFormat = this.getResponseFormat();
+      
+      // Parametry dla modelu
+      const modelParams = {
+        temperature: 0.7,
+        max_tokens: 1000
       };
-
-      return mockRecommendations;
+      
+      // Tworzymy wiadomość w formacie wymaganym przez OpenRouter
+      const messages = [{ role: 'user' as const, content: prompt }];
+      
+      // Wywołanie OpenRouter API
+      const response = await this.openRouterService.generateResponse(
+        messages,
+        responseFormat,
+        modelParams
+      );
+      
+      // Parsowanie odpowiedzi
+      return await this.parseAIResponse(response);
 
     } catch (error) {
       if (error instanceof RecommendationError) {
@@ -142,12 +278,43 @@ Opis gry zawiera ${command.description.length} znaków.`
         throw error;
       }
 
+      // W trybie debugowania, wyświetl więcej szczegółów
+      if (this.debugMode) {
+        console.error("Szczegóły błędu:", error);
+      }
+
+      const errorMessage = error instanceof Error ? error.message : "Nieznany błąd";
       const unknownError = new RecommendationError(
-        'Wystąpił nieoczekiwany błąd',
-        'UNKNOWN_ERROR'
+        `Wystąpił nieoczekiwany błąd: ${errorMessage}`,
+        "UNKNOWN_ERROR"
       );
+      
       await this.logError(unknownError, command.description);
       throw unknownError;
     }
+  }
+  
+  // Metoda tymczasowa do testowania - zwraca mocki zamiast korzystania z OpenRouter
+  async getMockRecommendations(command: GameDescriptionCommand): Promise<GameDescriptionResponseDto> {
+    this.validateDescription(command);
+    
+    // Symulacja opóźnienia
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const mockRecommendations: GameDescriptionResponseDto = {
+      players: command.players || 4,
+      duration: command.duration || 60,
+      types: command.types || ['strategy', 'family', 'card'],
+      complexity: command.complexity || 3,
+      description: `Na podstawie Twojego opisu, proponuję grę planszową, która:
+- Jest przeznaczona dla ${command.players || '2-4'} graczy
+- Trwa około ${command.duration || '60'} minut
+- Ma złożoność ${command.complexity || '3'}/5
+- Łączy elementy: ${(command.types || ['strategy', 'family', 'card']).join(', ')}
+
+Opis gry zawiera ${command.description.length} znaków.`
+    };
+    
+    return mockRecommendations;
   }
 } 
