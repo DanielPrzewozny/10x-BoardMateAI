@@ -146,18 +146,18 @@ export class RecommendationService {
     }
     
     if (command.duration) {
-      prompt += `Czas gry: ${command.duration} minut\n`;
+      prompt += `Czas gry do maksymalnie ${command.duration} minut\n`;
     }
     
     if (command.complexity) {
-      prompt += `Poziom złożoności: ${command.complexity}/5\n`;
+      prompt += `Poziom złożoności: ${command.complexity}\n`;
     }
     
     if (command.types && command.types.length > 0) {
       prompt += `Preferowane typy gier: ${command.types.join(", ")}\n`;
     }
     
-    prompt += `\nZapewnij odpowiedź w formacie JSON z trzema różnymi rekomendacjami w tablicy. Każda rekomendacja powinna zawierać:
+    prompt += `\nZapewnij odpowiedź w formacie JSON z dziewięcioma różnymi rekomendacjami w tablicy. Każda rekomendacja powinna zawierać:
 1. title - tytuł gry (string)
 2. players - liczba graczy (string w formacie "1-4" lub podobnym)
 3. duration - czas gry w minutach (string, np. "30-60")
