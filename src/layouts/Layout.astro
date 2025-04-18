@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import { supabaseClient } from '@/db/supabase.client';
 import UserNav from "../components/UserNav";
+import { Toaster } from "@/components/ui/toaster";
 
 interface Props {
   title?: string;
@@ -50,6 +51,7 @@ const user = session.data.session?.user;
     <main class="container mx-auto px-4 py-8">
       <slot />
     </main>
+    <Toaster client:load />
   </body>
 </html>
 
