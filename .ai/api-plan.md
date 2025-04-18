@@ -3,7 +3,7 @@
 1. **Main Entities from Database Schema:**
    - **Users**: 
      - Table: `Users`
-     - Fields: `id`, `firstName`, `lastName`, `email`, `passwordHash`, `preferredTypes`, `createdAt`, `lastLogin`, `accountStatus`
+     - Fields: `id`, `firstName`, `lastName`, `email`, `passwordHash`, `createdAt`, `lastLogin`, `accountStatus`
    - **AccountStatus**: 
      - Table: `AccountStatus`
      - Fields: `id`, `status`, `changedAt`
@@ -87,6 +87,8 @@
 - **GameHistory**: User interaction history with games
 - **GameTypes**: Available game types
 - **GameMechanics**: Available game mechanics
+- **FavoriteGames**: User's favorite games
+- **Preferences**: User's gaming preferences
 
 ## 2. Endpoints
 
@@ -178,6 +180,40 @@
 - Response: Created GameHistory object
 - Status Codes: 201 Created, 400 Bad Request
 
+### Favorites
+
+#### GET /api/favorites
+- Description: Get user's favorite games
+- Query Parameters:
+  - page: number
+  - limit: number
+  - sort: string
+- Response: Array of FavoriteGame objects with pagination
+- Status Codes: 200 OK
+
+#### POST /api/favorites
+- Description: Add game to favorites
+- Request Body: { gameId: UUID, notes?: string }
+- Response: Created FavoriteGame object
+- Status Codes: 201 Created, 400 Bad Request
+
+#### DELETE /api/favorites/{gameId}
+- Description: Remove game from favorites
+- Status Codes: 204 No Content, 404 Not Found
+
+### Preferences
+
+#### GET /api/preferences
+- Description: Get user's gaming preferences
+- Response: Preferences object
+- Status Codes: 200 OK, 404 Not Found
+
+#### PUT /api/preferences
+- Description: Update user's gaming preferences
+- Request Body: Preferences object
+- Response: Updated Preferences object
+- Status Codes: 200 OK, 400 Bad Request
+
 ## 3. Authentication and Authorization
 
 ### Authentication
@@ -220,22 +256,41 @@
 - Valid interaction_type values: played, abandoned, recommended
 - Duration must be positive
 
+### Favorites Validation
+- Required fields: gameId
+- Cannot favorite archived games
+- Optional notes field for user comments
+- One favorite entry per user per game
+
+### Preferences Validation
+- Required fields: userId
+- Valid preferredComplexity range: 1-5
+- Valid preferredPlayerCount: > 0
+- Valid maxGameDuration: > 0
+- preferredGameTypes must contain valid GameType UUIDs
+- preferredMechanics must contain valid GameMechanic UUIDs
+
 ### Business Logic Implementation
 1. **Game Recommendations**:
    - AI-powered endpoint using OpenRouter.ai
    - Considers user preferences and game history
+   - Uses user's explicit preferences from Preferences table
+   - Prioritizes games similar to user's favorites
    - Filters out archived games
    - Caches results for performance
 
 2. **User Preferences**:
-   - Stored in profile
+   - Stored in dedicated Preferences table
+   - One active preference set per user
    - Used for personalized recommendations
-   - Updated through profile endpoint
+   - Updated through preferences endpoint
+   - Maintains history of preference changes
 
-3. **Game Management**:
-   - Soft deletion using is_archived flag
-   - Maintains data integrity for historical records
-   - Prevents new reviews on archived games
+3. **Favorites Management**:
+   - Quick access to user's favorite games
+   - Optional notes for personal reminders
+   - Used in recommendation algorithm
+   - Prevents favoriting archived games
 
 4. **Review System**:
    - Helpful votes tracking

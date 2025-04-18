@@ -1,0 +1,17 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { ChatUI } from '@/components/ChatUI';
+---
+
+<Layout title="Czat z BoardMateAI">
+  <main class="container mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">Asystent BoardMateAI</h1>
+    <p class="text-center mb-8 max-w-2xl mx-auto">
+      Zadaj pytanie dotyczące gier planszowych, a nasz asystent AI pomoże Ci znaleźć odpowiedzi.
+    </p>
+    
+    <div class="w-full max-w-3xl mx-auto">
+      <ChatUI client:only="react" />
+    </div>
+  </main>
+</Layout> 
