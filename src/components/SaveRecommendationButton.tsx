@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useGameHistory } from '@/hooks/useGameHistory';
-import type { GameDescriptionResponseDto } from '@/types';
+import type { GameRecommendation } from '@/types';
 
 interface SaveRecommendationButtonProps {
-  recommendation: GameDescriptionResponseDto;
+  recommendation: GameRecommendation;
 }
 
 export default function SaveRecommendationButton({ recommendation }: SaveRecommendationButtonProps) {

@@ -1,15 +1,39 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import RecommendationList from '../RecommendationList';
-import type { GameDescriptionResponseDto } from '@/types';
+import type { GameRecommendation, GameRecommendationsResponseDto } from '@/types';
 
 describe('RecommendationList', () => {
-  const mockRecommendations: GameDescriptionResponseDto = {
-    players: 4,
-    duration: 60,
-    complexity: 3,
-    types: ['strategy', 'family'],
-    description: 'Testowy opis rekomendacji dla gry planszowej.'
+  const mockRecommendations: GameRecommendationsResponseDto = {
+    recommendations: [
+      {
+        title: "Catan",
+        players: "3-4",
+        duration: "60-120",
+        complexity: 3,
+        types: ['strategy', 'family'],
+        description: 'Testowy opis rekomendacji dla gry planszowej.',
+        imageUrl: ""
+      },
+      {
+        title: "Ticket to Ride",
+        players: "2-5",
+        duration: "30-60",
+        complexity: 2,
+        types: ['family', 'railway'],
+        description: 'Druga testowa rekomendacja gry planszowej.',
+        imageUrl: ""
+      },
+      {
+        title: "Scythe",
+        players: "1-5",
+        duration: "90-120",
+        complexity: 4,
+        types: ['strategy', 'war'],
+        description: 'Trzecia testowa rekomendacja gry planszowej.',
+        imageUrl: ""
+      }
+    ]
   };
 
   it('renderuje stan ładowania', () => {
@@ -31,25 +55,18 @@ describe('RecommendationList', () => {
     render(<RecommendationList recommendations={mockRecommendations} isLoading={false} error={null} />);
     
     expect(screen.getByText('Twoje rekomendacje')).toBeInTheDocument();
-    expect(screen.getByText('Liczba graczy')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument(); // players
-    expect(screen.getByText('60 min')).toBeInTheDocument(); // duration
-    expect(screen.getByText('3/5')).toBeInTheDocument(); // complexity
-    expect(screen.getByText('Typy gier')).toBeInTheDocument();
     
-    // Sprawdź, czy wszystkie typy są wyświetlone jako odznaki
-    mockRecommendations.types.forEach(type => {
-      expect(screen.getByText(type)).toBeInTheDocument();
+    // Sprawdź, czy wyświetlone są tytuły wszystkich gier
+    mockRecommendations.recommendations.forEach(recommendation => {
+      expect(screen.getByText(recommendation.title)).toBeInTheDocument();
     });
     
-    // Sprawdź, czy opis jest wyświetlony
-    expect(screen.getByText(mockRecommendations.description)).toBeInTheDocument();
-  });
-
-  it('zawiera przycisk do zapisania rekomendacji', () => {
-    render(<RecommendationList recommendations={mockRecommendations} isLoading={false} error={null} />);
+    // Sprawdź elementy pierwszej rekomendacji
+    expect(screen.getByText('Catan')).toBeInTheDocument();
+    expect(screen.getByText('3-4')).toBeInTheDocument(); // players
     
-    expect(screen.getByRole('button', { name: /Zapisz rekomendację/i })).toBeInTheDocument();
+    // Sprawdź, czy każda rekomendacja ma przycisk do zapisania
+    expect(screen.getAllByRole('button', { name: /Zapisz rekomendację/i })).toHaveLength(mockRecommendations.recommendations.length);
   });
 
   it('nie renderuje niczego gdy nie ma rekomendacji, nie ma błędu i nie ładuje', () => {

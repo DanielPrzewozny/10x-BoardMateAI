@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import type { GameDescriptionCommand, GameDescriptionResponseDto, RecommendationErrorLogDto } from '../types';
+import type { GameDescriptionCommand, GameRecommendation, GameRecommendationsResponseDto, RecommendationErrorLogDto } from '../types';
 import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from '../db/supabase.client';
 import { z } from 'zod';
 import { OpenRouterService } from './openrouter.service';
@@ -138,7 +138,7 @@ export class RecommendationService {
   }
 
   private generatePrompt(command: GameDescriptionCommand): string {
-    let prompt = `Potrzebuję rekomendacji gry planszowej na podstawie następujących preferencji:\n\n`;
+    let prompt = `Potrzebuję trzech rekomendacji gier planszowych na podstawie następujących preferencji:\n\n`;
     prompt += `Opis preferencji: ${command.description}\n\n`;
     
     if (command.players) {
@@ -146,23 +146,25 @@ export class RecommendationService {
     }
     
     if (command.duration) {
-      prompt += `Czas gry: ${command.duration} minut\n`;
+      prompt += `Czas gry do maksymalnie ${command.duration} minut\n`;
     }
     
     if (command.complexity) {
-      prompt += `Poziom złożoności: ${command.complexity}/5\n`;
+      prompt += `Poziom złożoności: ${command.complexity}\n`;
     }
     
     if (command.types && command.types.length > 0) {
       prompt += `Preferowane typy gier: ${command.types.join(", ")}\n`;
     }
     
-    prompt += `\nZapewnij odpowiedź w formacie JSON z następującymi polami:
-1. players - liczba graczy (liczba całkowita)
-2. duration - czas gry w minutach (liczba całkowita)
-3. types - lista typów gry (tablica stringów)
-4. complexity - poziom złożoności w skali 1-5 (liczba całkowita)
-5. description - szczegółowy opis rekomendacji (string)
+    prompt += `\nZapewnij odpowiedź w formacie JSON z dziewięcioma różnymi rekomendacjami w tablicy. Każda rekomendacja powinna zawierać:
+1. title - tytuł gry (string)
+2. players - liczba graczy (string w formacie "1-4" lub podobnym)
+3. duration - czas gry w minutach (string, np. "30-60")
+4. types - lista typów gry (tablica stringów)
+5. complexity - poziom złożoności w skali 1-5 (liczba całkowita)
+6. description - szczegółowy opis rekomendacji (string)
+7. imageUrl - pozostaw jako pusty string (będzie wypełniony później)
 
 Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tekstu.`;
     
@@ -170,32 +172,44 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
   }
 
   private getResponseFormat(): ResponseFormat {
-    // Uproszczony format JSON Schema
+    // Format JSON Schema dla listy rekomendacji
     return {
       type: "json_schema",
       json_schema: {
-        name: "gameRecommendation",
+        name: "gameRecommendations",
         strict: true,
         schema: {
           type: "object",
           properties: {
-            players: { type: "integer" },
-            duration: { type: "integer" },
-            types: { 
-              type: "array", 
-              items: { type: "string" } 
-            },
-            complexity: { type: "integer" },
-            description: { type: "string" }
+            recommendations: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  players: { type: "string" },
+                  duration: { type: "string" },
+                  types: { 
+                    type: "array", 
+                    items: { type: "string" } 
+                  },
+                  complexity: { type: "integer" },
+                  description: { type: "string" },
+                  imageUrl: { type: "string" }
+                },
+                required: ["title", "players", "duration", "types", "complexity", "description", "imageUrl"],
+                additionalProperties: false
+              }
+            }
           },
-          required: ["players", "duration", "types", "complexity", "description"],
+          required: ["recommendations"],
           additionalProperties: false
         }
       }
     };
   }
 
-  private async parseAIResponse(jsonResponse: string): Promise<GameDescriptionResponseDto> {
+  private async parseAIResponse(jsonResponse: string): Promise<GameRecommendation[]> {
     try {
       if (this.debugMode) {
         console.log("Odpowiedź z OpenRouter:", jsonResponse);
@@ -216,18 +230,19 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
       }
       
       // Walidacja odpowiedzi
-      if (!parsedResponse.players || !parsedResponse.duration || !parsedResponse.types || 
-          !parsedResponse.complexity || !parsedResponse.description) {
-        throw new Error("Odpowiedź nie zawiera wszystkich wymaganych pól");
+      if (!parsedResponse.recommendations || !Array.isArray(parsedResponse.recommendations) || parsedResponse.recommendations.length === 0) {
+        throw new Error("Odpowiedź nie zawiera listy rekomendacji");
       }
       
-      return {
-        players: Number(parsedResponse.players),
-        duration: Number(parsedResponse.duration),
-        types: Array.isArray(parsedResponse.types) ? parsedResponse.types : [parsedResponse.types],
-        complexity: Number(parsedResponse.complexity),
-        description: String(parsedResponse.description)
-      };
+      return parsedResponse.recommendations.map((recommendation: any) => ({
+        title: String(recommendation.title),
+        players: String(recommendation.players),
+        duration: String(recommendation.duration),
+        types: Array.isArray(recommendation.types) ? recommendation.types : [recommendation.types],
+        complexity: Number(recommendation.complexity),
+        description: String(recommendation.description),
+        imageUrl: String(recommendation.imageUrl || "")
+      }));
     } catch (error) {
       if (this.debugMode) {
         console.error("Błąd parsowania odpowiedzi AI:", error, "Oryginalna odpowiedź:", jsonResponse);
@@ -241,7 +256,7 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
     }
   }
 
-  async getRecommendations(command: GameDescriptionCommand): Promise<GameDescriptionResponseDto> {
+  async getRecommendations(command: GameDescriptionCommand): Promise<GameRecommendationsResponseDto> {
     try {
       this.validateDescription(command);
       
@@ -256,7 +271,7 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
       // Parametry dla modelu
       const modelParams = {
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1500
       };
       
       // Tworzymy wiadomość w formacie wymaganym przez OpenRouter
@@ -270,7 +285,11 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
       );
       
       // Parsowanie odpowiedzi
-      return await this.parseAIResponse(response);
+      const recommendations = await this.parseAIResponse(response);
+      
+      return {
+        recommendations: recommendations
+      };
 
     } catch (error) {
       if (error instanceof RecommendationError) {
@@ -292,29 +311,5 @@ Zwróć poprawny JSON zgodny z tym formatem, bez wyjaśnień czy dodatkowego tek
       await this.logError(unknownError, command.description);
       throw unknownError;
     }
-  }
-  
-  // Metoda tymczasowa do testowania - zwraca mocki zamiast korzystania z OpenRouter
-  async getMockRecommendations(command: GameDescriptionCommand): Promise<GameDescriptionResponseDto> {
-    this.validateDescription(command);
-    
-    // Symulacja opóźnienia
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockRecommendations: GameDescriptionResponseDto = {
-      players: command.players || 4,
-      duration: command.duration || 60,
-      types: command.types || ['strategy', 'family', 'card'],
-      complexity: command.complexity || 3,
-      description: `Na podstawie Twojego opisu, proponuję grę planszową, która:
-- Jest przeznaczona dla ${command.players || '2-4'} graczy
-- Trwa około ${command.duration || '60'} minut
-- Ma złożoność ${command.complexity || '3'}/5
-- Łączy elementy: ${(command.types || ['strategy', 'family', 'card']).join(', ')}
-
-Opis gry zawiera ${command.description.length} znaków.`
-    };
-    
-    return mockRecommendations;
   }
 } 
