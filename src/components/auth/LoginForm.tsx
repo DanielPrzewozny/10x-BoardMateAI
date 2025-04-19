@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFormValidation } from '../hooks/useFormValidation';
+import { secureStorage } from '@/lib/utils/secureStorage';
 
 const loginSchema = z.object({
   email: z.string().email('Nieprawidłowy format adresu email'),
@@ -48,7 +49,7 @@ export function LoginForm() {
 
       // Zapisz token w localStorage
       if (result.session?.access_token) {
-        localStorage.setItem('sb-access-token', result.session.access_token);
+        secureStorage.setItem('sb-access-token', { access_token: result.session.access_token, refresh_token: result.session.refresh_token });
         window.location.href = '/recommendations';
       } else {
         setError('Nie udało się zalogować. Spróbuj ponownie.');

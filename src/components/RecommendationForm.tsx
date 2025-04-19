@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import GameTypeSelector from '@/components/GameTypeSelector';
 import type { GameDescriptionCommand } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from "sonner";
 
 interface RecommendationFormProps {
   onSubmit: (data: GameDescriptionCommand) => void;
@@ -35,18 +37,24 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { isAuthenticated } = useAuth();
 
   // Obsługa zmiany pól formularza
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | number[] | string[],
     field: keyof GameDescriptionCommand
   ) => {
+    if (!isAuthenticated) {
+      toast.error("Wymagane logowanie", {
+        description: "Musisz być zalogowany, aby korzystać z generatora rekomendacji.",
+      });
+      return;
+    }
+
     if (Array.isArray(e)) {
       if (typeof e[0] === 'number') {
-        // Dla Slidera
         setFormData(prev => ({ ...prev, [field]: e[0] }));
       } else {
-        // Dla typów gier
         setFormData(prev => ({ ...prev, [field]: e }));
       }
     } else {
@@ -59,7 +67,6 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
       }));
     }
 
-    // Usunięcie błędu dla pola po jego zmianie
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -92,6 +99,13 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isAuthenticated) {
+      toast.error("Wymagane logowanie", {
+        description: "Musisz być zalogowany, aby korzystać z generatora rekomendacji.",
+      });
+      return;
+    }
+
     if (validateForm()) {
       onSubmit(formData);
     }
@@ -102,7 +116,9 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
       <CardHeader>
         <CardTitle className="text-xl sm:text-2xl">Znajdź idealną grę planszową</CardTitle>
         <CardDescription>
-          Opisz swoją grupę i preferencje, a my zaproponujemy gry dopasowane do Twoich potrzeb.
+          {isAuthenticated 
+            ? "Opisz swoją grupę i preferencje, a my zaproponujemy gry dopasowane do Twoich potrzeb."
+            : "Zaloguj się, aby korzystać z generatora rekomendacji gier planszowych."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -115,6 +131,7 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
               onChange={(e) => handleChange(e, 'description')}
               placeholder="Opisz swoją grupę, okazję, preferencje dotyczące gier, tematy które was interesują..."
               className="min-h-32"
+              disabled={!isAuthenticated}
             />
             {errors.description && (
               <p className="text-sm font-medium text-destructive">{errors.description}</p>
@@ -134,6 +151,7 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
                 max={12}
                 step={1}
                 onValueChange={(value) => handleChange(value, 'players')}
+                disabled={!isAuthenticated}
               />
               {errors.players && (
                 <p className="text-sm font-medium text-destructive">{errors.players}</p>
@@ -149,6 +167,7 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
                 max={5}
                 step={1}
                 onValueChange={(value) => handleChange(value, 'complexity')}
+                disabled={!isAuthenticated}
               />
               {errors.complexity && (
                 <p className="text-sm font-medium text-destructive">{errors.complexity}</p>
@@ -165,6 +184,7 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
               max={240}
               step={15}
               onValueChange={(value) => handleChange(value, 'duration')}
+              disabled={!isAuthenticated}
             />
             {errors.duration && (
               <p className="text-sm font-medium text-destructive">{errors.duration}</p>
@@ -177,6 +197,7 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
               value={formData.types || []}
               onChange={(value) => handleChange(value, 'types')}
               error={errors.types}
+              disabled={!isAuthenticated}
             />
           </div>
         </form>
@@ -185,10 +206,14 @@ export default function RecommendationForm({ onSubmit, isLoading }: Recommendati
         <Button 
           type="submit" 
           onClick={handleSubmit} 
-          disabled={isLoading}
+          disabled={isLoading || !isAuthenticated}
           className="w-full"
         >
-          {isLoading ? 'Generowanie rekomendacji...' : 'Generuj rekomendacje'}
+          {!isAuthenticated 
+            ? 'Zaloguj się, aby generować rekomendacje' 
+            : isLoading 
+              ? 'Generowanie rekomendacji...' 
+              : 'Generuj rekomendacje'}
         </Button>
       </CardFooter>
     </Card>

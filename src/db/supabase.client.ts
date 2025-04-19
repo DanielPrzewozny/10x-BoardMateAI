@@ -11,9 +11,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase URL or Anon Key is missing. Check your environment variables.');
 }
 
+// Pobierz referencję projektu z URL
+const projectRef = supabaseUrl.split('.')[0].split('//')[1];
+
 export const supabaseClient = createClient<Database>(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: true,
+    },
+  }
 );
 
 export type SupabaseClient = typeof supabaseClient;

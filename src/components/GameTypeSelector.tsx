@@ -33,13 +33,14 @@ const gameTypesList = [
   { value: "adventure", label: "Przygodowa" },
 ];
 
-interface GameTypeSelectorProps {
+export interface GameTypeSelectorProps {
   value: string[];
   onChange: (value: string[]) => void;
   error?: string;
+  disabled?: boolean;
 }
 
-export default function GameTypeSelector({ value, onChange, error }: GameTypeSelectorProps) {
+export default function GameTypeSelector({ value, onChange, error, disabled }: GameTypeSelectorProps) {
   const [open, setOpen] = useState(false);
   const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
 
@@ -48,6 +49,8 @@ export default function GameTypeSelector({ value, onChange, error }: GameTypeSel
   }, [value]);
 
   const handleSelect = (currentValue: string) => {
+    if (disabled) return;
+    
     const newValues = selectedValues.includes(currentValue)
       ? selectedValues.filter(val => val !== currentValue)
       : [...selectedValues, currentValue];
@@ -109,7 +112,7 @@ export default function GameTypeSelector({ value, onChange, error }: GameTypeSel
             <Badge 
               key={index} 
               variant="secondary"
-              className="cursor-pointer"
+              className={`cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'}`}
               onClick={() => handleSelect(selectedValues[index])}
             >
               {label}

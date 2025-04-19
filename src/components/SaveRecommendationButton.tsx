@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useGameHistory } from '@/hooks/useGameHistory';
+import { useAuth } from '@/hooks/useAuth';
 import type { GameRecommendation } from '@/types';
 
 interface SaveRecommendationButtonProps {
@@ -12,9 +13,17 @@ interface SaveRecommendationButtonProps {
 export default function SaveRecommendationButton({ recommendation }: SaveRecommendationButtonProps) {
   const [isSaved, setIsSaved] = useState(false);
   const { saveToHistory, isLoading, error } = useGameHistory();
+  const { isAuthenticated } = useAuth();
 
   const handleSave = async () => {
     if (isSaved) return;
+    
+    if (!isAuthenticated) {
+      toast.error("Wymagane logowanie", {
+        description: "Musisz być zalogowany, aby zapisać rekomendację.",
+      });
+      return;
+    }
     
     const success = await saveToHistory(recommendation);
     
@@ -29,6 +38,11 @@ export default function SaveRecommendationButton({ recommendation }: SaveRecomme
       });
     }
   };
+
+  // Nie renderuj przycisku jeśli użytkownik nie jest zalogowany
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Button
