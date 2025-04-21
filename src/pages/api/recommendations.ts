@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import type { GameDescriptionCommand } from '../../types';
 import { RecommendationService } from '../../lib/recommendation.service';
+import { GamesService } from '@/lib/services/games.service';
 import { supabaseClient } from '../../db/supabase.client';
 import { z } from 'zod';
 
@@ -53,7 +54,9 @@ export const POST: APIRoute = async ({ request }) => {
       
       // Pozyskaj rekomendacje
       const recommendationResponse = await recommendationService.getRecommendations(gameDescription);
-      
+      const gamesService = new GamesService();
+      await gamesService.addGamesFromRecommendationsBatch(recommendationResponse.recommendations);
+
       // Zwróć odpowiedź
       return new Response(
         JSON.stringify(recommendationResponse),

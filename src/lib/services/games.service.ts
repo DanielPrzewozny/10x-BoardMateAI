@@ -89,6 +89,14 @@ export class GamesService {
   }
 
   async addGameFromRecommendation(game: GameRecommendation) {
+    const {
+      data: { user },
+    } = await this.db.auth.getUser();
+
+    if (!user) {
+      throw new Error('Użytkownik nie jest zalogowany');
+    }
+
     const { data: existingGame } = await this.db
       .from('board_games')
       .select('id')
@@ -99,15 +107,29 @@ export class GamesService {
       return existingGame.id;
     }
 
+    // Parsowanie i walidacja liczby graczy
+    const [minPlayers, maxPlayersStr] = game.players.split('-');
+    const min = parseInt(minPlayers);
+    const max = maxPlayersStr ? parseInt(maxPlayersStr) : min;
+
+    if (isNaN(min) || min <= 0) {
+      throw new Error('Minimalna liczba graczy musi być większa od 0');
+    }
+
+    if (isNaN(max) || max < min) {
+      throw new Error('Maksymalna liczba graczy nie może być mniejsza od minimalnej');
+    }
+
     const { data: newGame, error: insertError } = await this.db
       .from('board_games')
       .insert({
         title: game.title,
         complexity: game.complexity,
-        min_players: parseInt(game.players.split('-')[0]),
-        max_players: parseInt(game.players.split('-')[1] || game.players.split('-')[0]),
+        min_players: min,
+        max_players: max,
         duration: parseInt(game.duration.split('-')[0]),
-        description: game.description
+        description: game.description,
+        created_by: user.id
       })
       .select('id')
       .single();
@@ -126,7 +148,8 @@ export class GamesService {
         user_id: userId,
         game_id: gameId,
         notes,
-        added_at: new Date().toISOString()
+        added_at: new Date().toISOString(),
+        created_by: userId
       });
 
     if (error) {
@@ -165,5 +188,67 @@ export class GamesService {
     }
 
     return data;
+  }
+
+  async addGamesFromRecommendationsBatch(games: GameRecommendation[]) {
+    if (!games.length) return [];
+
+    const {
+      data: { user },
+    } = await this.db.auth.getUser();
+
+    if (!user) {
+      throw new Error('Użytkownik nie jest zalogowany');
+    }
+
+    // Pobierz tylko tytuły gier, które już istnieją w bazie
+    const { data: existingTitles } = await this.db
+      .from('board_games')
+      .select('title')
+      .in('title', games.map(g => g.title));
+
+    const existingTitlesSet = new Set(existingTitles?.map(g => g.title) || []);
+    
+    // Filtruj tylko nowe gry, których jeszcze nie ma w bazie
+    const newGames = games.filter(game => !existingTitlesSet.has(game.title));
+
+    if (!newGames.length) return [];
+
+    // Przygotuj dane do zbiorowego insertu z walidacją
+    const gamesToInsert = newGames.map(game => {
+      const [minPlayers, maxPlayersStr] = game.players.split('-');
+      const min = parseInt(minPlayers);
+      const max = maxPlayersStr ? parseInt(maxPlayersStr) : min;
+
+      if (isNaN(min) || min <= 0) {
+        throw new Error(`Gra "${game.title}": Minimalna liczba graczy musi być większa od 0`);
+      }
+
+      if (isNaN(max) || max < min) {
+        throw new Error(`Gra "${game.title}": Maksymalna liczba graczy nie może być mniejsza od minimalnej`);
+      }
+
+      return {
+        title: game.title,
+        complexity: game.complexity,
+        min_players: min,
+        max_players: max,
+        duration: parseInt(game.duration.split('-')[0]),
+        description: game.description,
+        created_by: user.id
+      };
+    });
+
+    // Wykonaj zbiorowy insert
+    const { data: insertedGames, error: insertError } = await this.db
+      .from('board_games')
+      .insert(gamesToInsert)
+      .select('id, title');
+
+    if (insertError) {
+      throw new Error(`Błąd podczas zbiorowego dodawania gier: ${insertError.message}`);
+    }
+
+    return insertedGames || [];
   }
 } 
