@@ -1,5 +1,6 @@
 import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from '@/db/supabase.client';
 import { z } from 'zod';
+import type { GameRecommendation } from '@/types';
 
 export const gameFiltersSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -78,6 +79,85 @@ export class GamesService {
 
     if (error) {
       throw new Error(`Błąd podczas pobierania gry: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('Nie znaleziono gry');
+    }
+
+    return data;
+  }
+
+  async addGameFromRecommendation(game: GameRecommendation) {
+    const { data: existingGame } = await this.db
+      .from('board_games')
+      .select('id')
+      .eq('title', game.title)
+      .single();
+
+    if (existingGame) {
+      return existingGame.id;
+    }
+
+    const { data: newGame, error: insertError } = await this.db
+      .from('board_games')
+      .insert({
+        title: game.title,
+        complexity: game.complexity,
+        min_players: parseInt(game.players.split('-')[0]),
+        max_players: parseInt(game.players.split('-')[1] || game.players.split('-')[0]),
+        duration: parseInt(game.duration.split('-')[0]),
+        description: game.description
+      })
+      .select('id')
+      .single();
+
+    if (insertError || !newGame) {
+      throw new Error(`Błąd podczas dodawania gry: ${insertError?.message}`);
+    }
+
+    return newGame.id;
+  }
+
+  async addToFavorites(userId: string, gameId: string, notes: string = '') {
+    const { error } = await this.db
+      .from('favorite_games')
+      .insert({
+        user_id: userId,
+        game_id: gameId,
+        notes,
+        added_at: new Date().toISOString()
+      });
+
+    if (error) {
+      throw new Error(`Błąd podczas dodawania do ulubionych: ${error.message}`);
+    }
+
+    return true;
+  }
+
+  async removeFromFavorites(userId: string, gameId: string) {
+    const { error } = await this.db
+      .from('favorite_games')
+      .delete()
+      .match({ user_id: userId, game_id: gameId });
+
+    if (error) {
+      throw new Error(`Błąd podczas usuwania z ulubionych: ${error.message}`);
+    }
+
+    return true;
+  }
+
+  async getGameByTitle(title: string) {
+    const { data, error } = await this.db
+      .from('board_games')
+      .select('id')
+      .eq('title', title)
+      .single();
+
+    if (error) {
+      throw new Error(`Błąd podczas wyszukiwania gry: ${error.message}`);
     }
 
     if (!data) {

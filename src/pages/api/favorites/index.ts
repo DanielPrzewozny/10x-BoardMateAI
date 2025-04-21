@@ -2,17 +2,16 @@ import type { APIRoute } from 'astro';
 import { FavoritesService, favoriteGameSchema, paginationSchema } from '@/lib/services/favorites.service';
 import { handleError } from '@/lib/utils/api';
 import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from '@/db/supabase.client';
+import type { User } from '@supabase/supabase-js';
 
 interface Locals {
   supabase: SupabaseClient;
-  user?: {
-    id: string;
-  };
+  user: User | null;
 }
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url, locals }: { url: URL; locals: Locals }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
     //const { user } = locals;
     
@@ -49,7 +48,7 @@ export const GET: APIRoute = async ({ url, locals }: { url: URL; locals: Locals 
   }
 };
 
-export const POST: APIRoute = async ({ request, locals }: { request: Request; locals: Locals }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const { user } = locals;
     
