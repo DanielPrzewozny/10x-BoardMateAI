@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { ProfileForm } from '../components/profile/ProfileForm';
+---
+
+<Layout title="Profil użytkownika - BoardMate AI">
+  <main class="container mx-auto py-8">
+    <ProfileForm client:load />
+  </main>
+</Layout> 

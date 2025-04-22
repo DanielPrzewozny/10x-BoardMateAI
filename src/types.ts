@@ -11,8 +11,16 @@ export type GameHistory = Tables['game_history']['Row'];
 export type RecommendationErrorLog = Tables['recommendation_error_logs']['Row'];
 
 // Profile Data Transfer Object
-export type ProfileDTO = Pick<Profile,
-  'id' | 'first_name' | 'last_name' | 'account_status' | 'preferred_types'>;
+export type ProfileDTO = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  account_status: string;
+  preferred_types: string[];
+  avatarUrl?: string;
+  joinDate: Date;
+};
 
 // Board Game Data Transfer Object  
 export type BoardGameDTO = Pick<BoardGame,
@@ -39,6 +47,16 @@ export interface BoardGameDescriptionDTO {
     duration: number;
     description: string;
     is_archived: boolean;
+  }
+
+// Game Preferences
+export interface GamePreferences {
+  minPlayers: number;
+  maxPlayers: number;
+  preferredDuration: number;
+  preferredTypes: string[];
+  complexityLevel: number;
+  budget?: number;
   }
 
 // Recommendation Data Transfer Object

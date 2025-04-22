@@ -3,12 +3,14 @@ import "../styles/global.css";
 import { supabaseClient } from '@/db/supabase.client';
 import UserNav from "../components/UserNav";
 import { Toaster } from "@/components/ui/toaster";
+import Navigation from "../components/Navigation.astro";
+import Sidebar from "../components/Sidebar.astro";
 
 interface Props {
-  title?: string;
+  title: string;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title } = Astro.props;
 
 // Pobierz sesję użytkownika
 const session = await supabaseClient.auth.getSession();
@@ -19,47 +21,74 @@ const user = session.data.session?.user;
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
+    <meta name="description" content="BoardMate AI - Twój asystent w wyborze gier planszowych" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
+    <title>{title} | BoardMate AI</title>
   </head>
   <body>
-    <header class="w-full border-b">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="text-xl font-bold">BoardMateAI</a>
-        {user ? (
-          <UserNav client:load user={user} />
-        ) : (
-          <div class="space-x-4">
-            <a
-              href="/auth/login"
-              class="text-sm font-medium hover:text-blue-600 transition-colors"
-            >
-              Zaloguj się
-            </a>
-            <a
-              href="/auth/register"
-              class="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Zarejestruj się
-            </a>
+    <Navigation />
+    <div class="flex h-screen pt-16">
+      <Sidebar />
+      <div class="flex-1 overflow-auto">
+        <header class="w-full border-b bg-white">
+          <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">{title}</h1>
+            {user ? (
+              <UserNav client:load user={user} />
+            ) : (
+              <div class="space-x-4">
+                <a
+                  href="/auth/login"
+                  class="text-sm font-medium hover:text-blue-600 transition-colors"
+                >
+                  Zaloguj się
+                </a>
+                <a
+                  href="/auth/register"
+                  class="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Zarejestruj się
+                </a>
+              </div>
+            )}
           </div>
-        )}
+        </header>
+        <main class="container mx-auto px-4 py-8">
+          <slot />
+        </main>
       </div>
-    </header>
-    <main class="container mx-auto px-4 py-8">
-      <slot />
-    </main>
+    </div>
     <Toaster client:load />
   </body>
 </html>
 
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
+<style is:global>
+  :root {
+    --accent: 136, 58, 234;
+    --accent-light: 224, 204, 250;
+    --accent-dark: 49, 10, 101;
+    --accent-gradient: linear-gradient(
+      45deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-light)) 30%,
+      white 60%
+    );
+  }
+  html {
+    font-family: system-ui, sans-serif;
+    background: #f6f6f6;
+  }
+  code {
+    font-family:
+      Menlo,
+      Monaco,
+      Lucida Console,
+      Liberation Mono,
+      DejaVu Sans Mono,
+      Bitstream Vera Sans Mono,
+      Courier New,
+      monospace;
   }
 </style>
