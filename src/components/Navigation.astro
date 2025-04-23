@@ -1,0 +1,216 @@
+---
+import { supabaseClient } from '@/db/supabase.client';
+
+const { data: { session } } = await supabaseClient.auth.getSession();
+const isLoggedIn = !!session;
+---
+
+<nav class="bg-white shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center">
+          <a href="/" class="text-2xl font-bold text-blue-600">
+            BoardMateAI
+          </a>
+        </div>
+
+        <!-- Główne linki nawigacyjne -->
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a
+            href="/"
+            class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-blue-500"
+          >
+            Strona główna
+          </a>
+          {
+            isLoggedIn && (
+              <>
+                <a
+                  href="/recommendations"
+                  class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-blue-500"
+                >
+                  Rekomendacje
+                </a>
+                <a
+                  href="/games"
+                  class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-blue-500"
+                >
+                  Katalog gier
+                </a>
+                <a
+                  href="/history"
+                  class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-blue-500"
+                >
+                  Historia
+                </a>
+              </>
+            )
+          }
+        </div>
+      </div>
+
+      <!-- Przyciski logowania/profilu -->
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        {
+          isLoggedIn ? (
+            <div class="flex items-center space-x-4">
+              <a
+                href="/profile"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                Profil
+              </a>
+              <button
+                type="button"
+                id="logout-button"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                Wyloguj się
+              </button>
+            </div>
+          ) : (
+            <div class="flex items-center space-x-4">
+              <a
+                href="/auth/login"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                Zaloguj się
+              </a>
+              <a
+                href="/auth/register"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                Zarejestruj się
+              </a>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Przycisk menu mobilnego -->
+      <div class="flex items-center sm:hidden">
+        <button
+          type="button"
+          id="mobile-menu-button"
+          class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
+        >
+          <span class="sr-only">Otwórz menu główne</span>
+          <svg
+            class="block h-6 w-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu mobilne -->
+  <div class="sm:hidden hidden" id="mobile-menu">
+    <div class="pt-2 pb-3 space-y-1">
+      <a
+        href="/"
+        class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+      >
+        Strona główna
+      </a>
+      {
+        isLoggedIn && (
+          <>
+            <a
+              href="/recommendations"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Rekomendacje
+            </a>
+            <a
+              href="/games"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Katalog gier
+            </a>
+            <a
+              href="/history"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Historia
+            </a>
+            <a
+              href="/profile"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Profil
+            </a>
+            <button
+              type="button"
+              id="mobile-logout-button"
+              class="block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Wyloguj się
+            </button>
+          </>
+        )
+      }
+      {
+        !isLoggedIn && (
+          <>
+            <a
+              href="/auth/login"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Zaloguj się
+            </a>
+            <a
+              href="/auth/register"
+              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+            >
+              Zarejestruj się
+            </a>
+          </>
+        )
+      }
+    </div>
+  </div>
+</nav>
+
+<script>
+  import { supabaseClient } from '@/db/supabase.client';
+
+  // Obsługa menu mobilnego
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuButton?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+
+  // Obsługa wylogowywania
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Błąd podczas wylogowywania:', error);
+    }
+  };
+
+  const logoutButton = document.getElementById('logout-button');
+  const mobileLogoutButton = document.getElementById('mobile-logout-button');
+
+  logoutButton?.addEventListener('click', handleLogout);
+  mobileLogoutButton?.addEventListener('click', handleLogout);
+</script>
