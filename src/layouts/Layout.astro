@@ -27,13 +27,13 @@ const user = session.data.session?.user;
     <meta name="generator" content={Astro.generator} />
     <title>{title} | BoardMate AI</title>
   </head>
-  <body>
+  <body class="bg-gray-50">
     <Navigation />
-    <div class="flex h-screen pt-16">
+    <div class="flex min-h-screen pt-16">
       <Sidebar />
-      <div class="flex-1 overflow-auto">
-        <header class="w-full border-b bg-white">
-          <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex-1 ml-64">
+        <header class="fixed top-16 right-0 left-64 h-16 border-b bg-white z-10">
+          <div class="container h-full mx-auto px-6 flex justify-between items-center">
             <h1 class="text-xl font-bold">{title}</h1>
             {user ? (
               <UserNav client:load user={user} />
@@ -55,7 +55,7 @@ const user = session.data.session?.user;
             )}
           </div>
         </header>
-        <main class="container mx-auto px-4 py-8">
+        <main class="pt-16 container mx-auto px-6 py-8">
           <slot />
         </main>
       </div>
@@ -78,7 +78,6 @@ const user = session.data.session?.user;
   }
   html {
     font-family: system-ui, sans-serif;
-    background: #f6f6f6;
   }
   code {
     font-family:

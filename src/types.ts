@@ -12,14 +12,15 @@ export type RecommendationErrorLog = Tables['recommendation_error_logs']['Row'];
 
 // Profile Data Transfer Object
 export type ProfileDTO = {
-  id: string;
+  id?: string;
   first_name: string;
   last_name: string;
   email: string;
-  account_status: string;
-  preferred_types: string[];
+  account_status?: string;
+  preferred_types?: string[];
   avatarUrl?: string;
-  joinDate: Date;
+  joinDate?: Date;
+  preferences?: GamePreferences;
 };
 
 // Board Game Data Transfer Object  

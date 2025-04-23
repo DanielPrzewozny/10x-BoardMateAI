@@ -1,6 +1,12 @@
 import React from 'react';
 import type { ProfileDTO } from '@/types';
 
+const defaultProfile: ProfileDTO = {
+  first_name: '',
+  last_name: '',
+  email: '',
+};
+
 interface ProfileFormProps {
   profile: ProfileDTO;
   onChange: (data: Partial<ProfileDTO>) => void;
@@ -9,11 +15,17 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({
-  profile,
+  profile: rawProfile,
   onChange,
   onSubmit,
   isLoading
 }) => {
+  // Połącz z domyślnymi wartościami
+  const profile = {
+    ...defaultProfile,
+    ...rawProfile
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(profile);
@@ -25,6 +37,11 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       [field]: e.target.value
     });
   };
+
+  // Jeśli nie mamy profilu, nie renderuj formularza
+  if (!profile) {
+    return <div>Ładowanie profilu...</div>;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -42,7 +59,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                 type="text"
                 id="first_name"
                 name="first_name"
-                value={profile.first_name}
+                value={profile.first_name ?? ''}
                 onChange={handleChange('first_name')}
                 required
                 minLength={2}
@@ -61,7 +78,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                 type="text"
                 id="last_name"
                 name="last_name"
-                value={profile.last_name}
+                value={profile.last_name ?? ''}
                 onChange={handleChange('last_name')}
                 required
                 minLength={2}
@@ -80,7 +97,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                 type="email"
                 id="email"
                 name="email"
-                value={profile.email}
+                value={profile.email ?? ''}
                 disabled
                 className="block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />

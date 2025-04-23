@@ -1,65 +1,33 @@
-import React, { useState } from 'react';
-import { QueryClient, QueryClientProvider, useQuery, useMutation } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProfileHeader } from './ProfileHeader';
 import { ProfileTabs } from './ProfileTabs';
 import { ProfileForm } from './ProfileForm';
 import { PreferencesForm } from './PreferencesForm';
 import type { ProfileDTO, GamePreferences } from '@/types';
-import { toast } from 'sonner';
+import { useProfile } from '../hooks/useProfile';
 
 const queryClient = new QueryClient();
 
 interface ProfileViewProps {
-  userId: string;
   defaultTab?: 'profile' | 'preferences';
 }
 
-const ProfileViewContent: React.FC<ProfileViewProps> = ({ userId, defaultTab = 'profile' }) => {
+const ProfileViewContent: React.FC<ProfileViewProps> = ({ defaultTab = 'profile' }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences'>(defaultTab);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Pobieranie danych profilu
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile', userId],
-    queryFn: () => fetch(`/api/profiles/${userId}`).then((res) => res.json())
-  });
-
-  // Mutacja do aktualizacji profilu
-  const updateProfileMutation = useMutation({
-    mutationFn: (data: ProfileDTO) =>
-      fetch(`/api/profiles/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).then((res) => res.json()),
-    onSuccess: () => {
-      toast.success('Profil został zaktualizowany');
-      setHasUnsavedChanges(false);
-    },
-    onError: () => {
-      toast.error('Wystąpił błąd podczas aktualizacji profilu');
-    },
-  });
-
-  // Mutacja do aktualizacji preferencji
-  const updatePreferencesMutation = useMutation({
-    mutationFn: (data: GamePreferences) =>
-      fetch(`/api/profiles/${userId}/preferences`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).then((res) => res.json()),
-    onSuccess: () => {
-      toast.success('Preferencje zostały zaktualizowane');
-      setHasUnsavedChanges(false);
-    },
-    onError: () => {
-      toast.error('Wystąpił błąd podczas aktualizacji preferencji');
-    },
-  });
+  const {
+    profile,
+    isLoading,
+    isProfileEmpty,
+    updateProfile,
+    updatePreferences,
+    isUpdating
+  } = useProfile();
 
   // Obsługa zmiany zakładki
-  const handleTabChange = (tab: 'profile' | 'preferences') => {
+  const handleTabChange = useCallback((tab: 'profile' | 'preferences') => {
     if (hasUnsavedChanges) {
       if (window.confirm('Masz niezapisane zmiany. Czy na pewno chcesz zmienić zakładkę?')) {
         setActiveTab(tab);
@@ -68,30 +36,49 @@ const ProfileViewContent: React.FC<ProfileViewProps> = ({ userId, defaultTab = '
     } else {
       setActiveTab(tab);
     }
-  };
+  }, [hasUnsavedChanges]);
 
   // Obsługa zmian w profilu
-  const handleProfileChange = (data: Partial<ProfileDTO>) => {
+  const handleProfileChange = useCallback((data: Partial<ProfileDTO>) => {
     setHasUnsavedChanges(true);
-  };
+  }, []);
 
   // Obsługa zmian w preferencjach
-  const handlePreferencesChange = (data: Partial<GamePreferences>) => {
+  const handlePreferencesChange = useCallback((data: Partial<GamePreferences>) => {
     setHasUnsavedChanges(true);
-  };
+  }, []);
 
   // Obsługa zapisu profilu
-  const handleProfileSave = (data: ProfileDTO) => {
-    updateProfileMutation.mutate(data);
-  };
+  const handleProfileSave = useCallback((data: ProfileDTO) => {
+    updateProfile(data);
+    setHasUnsavedChanges(false);
+  }, [updateProfile]);
 
   // Obsługa zapisu preferencji
-  const handlePreferencesSave = (data: GamePreferences) => {
-    updatePreferencesMutation.mutate(data);
-  };
+  const handlePreferencesSave = useCallback((data: GamePreferences) => {
+    updatePreferences(data);
+    setHasUnsavedChanges(false);
+  }, [updatePreferences]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Ładowanie...</div>;
+  }
+
+  // Jeśli profil jest pusty, pokazujemy tylko formularz edycji
+  if (isProfileEmpty) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Uzupełnij swój profil</h1>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <ProfileForm
+            profile={profile}
+            onChange={handleProfileChange}
+            onSubmit={handleProfileSave}
+            isLoading={isUpdating}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -108,14 +95,14 @@ const ProfileViewContent: React.FC<ProfileViewProps> = ({ userId, defaultTab = '
             profile={profile}
             onChange={handleProfileChange}
             onSubmit={handleProfileSave}
-            isLoading={updateProfileMutation.isPending}
+            isLoading={isUpdating}
           />
         ) : (
           <PreferencesForm
             preferences={profile?.preferences}
             onChange={handlePreferencesChange}
             onSubmit={handlePreferencesSave}
-            isLoading={updatePreferencesMutation.isPending}
+            isLoading={isUpdating}
           />
         )}
       </div>
