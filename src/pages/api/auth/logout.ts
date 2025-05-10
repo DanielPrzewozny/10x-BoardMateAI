@@ -1,5 +1,5 @@
-import type { APIRoute } from 'astro';
-import { supabaseClient } from '@/db/supabase.client';
+import type { APIRoute } from "astro";
+import { supabaseClient } from "@/db/supabase.client";
 import { authService } from "@/lib/services/auth.service";
 
 export const POST: APIRoute = async ({ cookies }) => {
@@ -9,27 +9,27 @@ export const POST: APIRoute = async ({ cookies }) => {
 
     return new Response(
       JSON.stringify({
-        success: true
+        success: true,
       }),
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Wystąpił błąd podczas wylogowywania'
+        error: "Wystąpił błąd podczas wylogowywania",
       }),
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
   }
-}; 
+};

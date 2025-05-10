@@ -1,9 +1,9 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface User {
   id: string;
   email: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
 }
 
 export interface Locals {
@@ -14,4 +14,4 @@ export interface Locals {
 export interface APIContext {
   locals: Locals;
   params: Record<string, string>;
-} 
+}

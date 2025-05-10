@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import SaveRecommendationButton from '@/components/SaveRecommendationButton';
-import type { GameRecommendation, GameRecommendationsResponseDto } from '@/types';
+import SaveRecommendationButton from "@/components/SaveRecommendationButton";
+import type { GameRecommendationItem, GameRecommendationsResponseDto } from "@/types";
 
 interface RecommendationListProps {
   recommendations: GameRecommendationsResponseDto | null;
@@ -10,6 +10,17 @@ interface RecommendationListProps {
 }
 
 export default function RecommendationList({ recommendations, isLoading, error }: RecommendationListProps) {
+  // Logowanie do debugowania
+  console.log("RecommendationList - props:", { hasRecommendations: !!recommendations, isLoading, error });
+  if (recommendations) {
+    console.log(
+      "Struktura recommendations:",
+      recommendations.recommendations
+        ? `Tablica długości ${recommendations.recommendations.length}`
+        : "Brak tablicy recommendations"
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="w-full max-w-4xl mx-auto mt-8">
@@ -41,8 +52,26 @@ export default function RecommendationList({ recommendations, isLoading, error }
     );
   }
 
-  if (!recommendations || !recommendations.recommendations.length) {
-    return null;
+  // Sprawdzenie czy recommendations i recommendations.recommendations istnieją
+  if (
+    !recommendations ||
+    !recommendations.recommendations ||
+    !Array.isArray(recommendations.recommendations) ||
+    recommendations.recommendations.length === 0
+  ) {
+    return (
+      <div className="w-full max-w-4xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Brak rekomendacji</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center">Nie znaleziono rekomendacji pasujących do podanych kryteriów.</p>
+            <p className="text-center text-sm text-muted-foreground mt-2">Spróbuj zmienić parametry wyszukiwania.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -53,7 +82,7 @@ export default function RecommendationList({ recommendations, isLoading, error }
           <CardDescription>Na podstawie Twoich preferencji</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-test-id="recommendations-grid">
             {recommendations.recommendations.map((recommendation, index) => (
               <RecommendationCard key={index} recommendation={recommendation} />
             ))}
@@ -70,14 +99,16 @@ export default function RecommendationList({ recommendations, isLoading, error }
 }
 
 interface RecommendationCardProps {
-  recommendation: GameRecommendation;
+  recommendation: GameRecommendationItem;
 }
 
 function RecommendationCard({ recommendation }: RecommendationCardProps) {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col" data-test-id={`recommendation-card-${recommendation.title}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl">{recommendation.title}</CardTitle>
+        <CardTitle className="text-xl" data-test-id="recommendation-title">
+          {recommendation.title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="space-y-4">
@@ -91,14 +122,14 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
               <p className="text-base font-bold">{recommendation.duration} min</p>
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-xs font-medium mb-1">Złożoność</h3>
             <div className="flex items-center">
               <div className="flex-grow h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary rounded-full" 
-                  style={{width: `${(recommendation.complexity / 5) * 100}%`}}
+                <div
+                  className="h-full bg-primary rounded-full"
+                  style={{ width: `${(recommendation.complexity / 5) * 100}%` }}
                 />
               </div>
               <span className="ml-2 text-xs font-medium">{recommendation.complexity}/5</span>
@@ -109,7 +140,9 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
             <h3 className="text-xs font-medium mb-1">Typy gier</h3>
             <div className="flex flex-wrap gap-1">
               {recommendation.types.map((type) => (
-                <Badge key={type} variant="secondary" className="text-xs">{type}</Badge>
+                <Badge key={type} variant="secondary" className="text-xs">
+                  {type}
+                </Badge>
               ))}
             </div>
           </div>
@@ -127,4 +160,4 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
       </CardFooter>
     </Card>
   );
-} 
+}

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabaseClient } from '@/db/supabase.client';
+import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabaseClient } from "@/db/supabase.client";
 import { Loader2 } from "lucide-react";
 
 export function LogoutForm() {
@@ -10,26 +10,25 @@ export function LogoutForm() {
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       const result = await response.json();
-      
+
       if (!result.success) {
         setError(result.error);
         return;
       }
 
       // Usuń token z localStorage
-      localStorage.removeItem('sb-access-token');
-      window.location.href = '/';
-      
+      localStorage.removeItem("sb-access-token");
+      window.location.href = "/";
     } catch (err) {
-      setError('Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.');
+      setError("Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.");
     } finally {
       setIsLoading(false);
     }
@@ -54,4 +53,4 @@ export function LogoutForm() {
       ) : null}
     </div>
   );
-} 
+}

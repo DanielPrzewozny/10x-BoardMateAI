@@ -1,12 +1,14 @@
 ---
-import { supabaseClient } from '@/db/supabase.client';
-import ProfileView from '@/components/profile/ProfileView';
-import Layout from '@/layouts/Layout.astro';
+import { supabaseClient } from "@/db/supabase.client";
+import ProfileView from "@/components/profile/ProfileView";
+import Layout from "@/layouts/Layout.astro";
 
-const { data: { session } } = await supabaseClient.auth.getSession();
+const {
+  data: { session },
+} = await supabaseClient.auth.getSession();
 
 if (!session) {
-  return Astro.redirect('/auth/login');
+  return Astro.redirect("/auth/login");
 }
 ---
 
@@ -14,4 +16,4 @@ if (!session) {
   <div class="min-h-screen bg-gray-50 py-8">
     <ProfileView client:load />
   </div>
-</Layout> 
+</Layout>

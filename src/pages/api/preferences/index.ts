@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { PreferencesService, preferencesSchema } from '@/lib/services/preferences.service';
-import { handleError } from '@/lib/utils/api';
+import type { APIRoute } from "astro";
+import { PreferencesService, preferencesSchema } from "@/lib/services/preferences.service";
+import { handleError } from "@/lib/utils/api";
 
 export const prerender = false;
 
@@ -27,4 +27,4 @@ export const PUT: APIRoute = async ({ locals, request }) => {
   } catch (error) {
     return handleError(error);
   }
-}; 
+};

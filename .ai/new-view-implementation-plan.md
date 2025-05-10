@@ -56,7 +56,7 @@ Nowy widok ma na celu umożliwienie użytkownikom przeglądania rekomendacji gie
 - `SearchQuery`: Zawiera dane zapytania wyszukiwania.
 
 ## 6. Zarządzanie stanem
-Stan widoku będzie zarządzany za pomocą niestandardowych hooków, takich jak `useRecommendations`, `useGameHistory`, i `useUserProfile`, które będą odpowiedzialne za pobieranie i aktualizację danych.
+Stan widoku będzie zarządzany za pomocą niestandardowych hooków, takich jak `useRecommendations`, `useGameRecommendations`, i `useUserProfile`, które będą odpowiedzialne za pobieranie i aktualizację danych.
 
 ## 7. Integracja API
 Widok będzie integrować się z API poprzez wywołania:

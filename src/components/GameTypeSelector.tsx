@@ -1,21 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { FormMessage } from '@/components/ui/form';
+import { FormMessage } from "@/components/ui/form";
 
 // Lista przykładowych typów gier
 const gameTypesList = [
@@ -50,18 +40,18 @@ export default function GameTypeSelector({ value, onChange, error, disabled }: G
 
   const handleSelect = (currentValue: string) => {
     if (disabled) return;
-    
+
     const newValues = selectedValues.includes(currentValue)
-      ? selectedValues.filter(val => val !== currentValue)
+      ? selectedValues.filter((val) => val !== currentValue)
       : [...selectedValues, currentValue];
-    
+
     setSelectedValues(newValues);
     onChange(newValues);
     // Nie zamykamy popovera po wyborze, aby umożliwić wybór wielu typów
   };
 
-  const selectedLabels = selectedValues.map(val => {
-    const type = gameTypesList.find(type => type.value === val);
+  const selectedLabels = selectedValues.map((val) => {
+    const type = gameTypesList.find((type) => type.value === val);
     return type ? type.label : val;
   });
 
@@ -69,14 +59,9 @@ export default function GameTypeSelector({ value, onChange, error, disabled }: G
     <div className="space-y-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-          >
-            {selectedValues.length > 0 
-              ? `Wybrano ${selectedValues.length} ${selectedValues.length === 1 ? 'typ' : selectedValues.length < 5 ? 'typy' : 'typów'}`
+          <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
+            {selectedValues.length > 0
+              ? `Wybrano ${selectedValues.length} ${selectedValues.length === 1 ? "typ" : selectedValues.length < 5 ? "typy" : "typów"}`
               : "Wybierz typy gier"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -87,16 +72,9 @@ export default function GameTypeSelector({ value, onChange, error, disabled }: G
             <CommandEmpty>Nie znaleziono typów gier.</CommandEmpty>
             <CommandGroup>
               {gameTypesList.map((type) => (
-                <CommandItem
-                  key={type.value}
-                  value={type.value}
-                  onSelect={() => handleSelect(type.value)}
-                >
+                <CommandItem key={type.value} value={type.value} onSelect={() => handleSelect(type.value)}>
                   <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedValues.includes(type.value) ? "opacity-100" : "opacity-0"
-                    )}
+                    className={cn("mr-2 h-4 w-4", selectedValues.includes(type.value) ? "opacity-100" : "opacity-0")}
                   />
                   {type.label}
                 </CommandItem>
@@ -109,10 +87,10 @@ export default function GameTypeSelector({ value, onChange, error, disabled }: G
       {selectedValues.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {selectedLabels.map((label, index) => (
-            <Badge 
-              key={index} 
+            <Badge
+              key={index}
               variant="secondary"
-              className={`cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'}`}
+              className={`cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"}`}
               onClick={() => handleSelect(selectedValues[index])}
             >
               {label}
@@ -125,4 +103,4 @@ export default function GameTypeSelector({ value, onChange, error, disabled }: G
       {error && <FormMessage>{error}</FormMessage>}
     </div>
   );
-} 
+}

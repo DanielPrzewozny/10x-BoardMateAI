@@ -22,13 +22,13 @@ export const useChat = (options: ChatOptions = {}) => {
   const [state, setState] = useState<ChatState>({
     messages: [],
     isLoading: false,
-    error: null
+    error: null,
   });
 
   const addMessage = useCallback((message: ChatMessage) => {
     setState((prevState) => ({
       ...prevState,
-      messages: [...prevState.messages, message]
+      messages: [...prevState.messages, message],
     }));
   }, []);
 
@@ -40,7 +40,7 @@ export const useChat = (options: ChatOptions = {}) => {
         ...prevState,
         messages: [...prevState.messages, userMessage],
         isLoading: true,
-        error: null
+        error: null,
       }));
 
       try {
@@ -48,13 +48,13 @@ export const useChat = (options: ChatOptions = {}) => {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             message: content,
             modelName: options.modelName,
-            responseFormat: options.responseFormat
-          })
+            responseFormat: options.responseFormat,
+          }),
         });
 
         if (!response.ok) {
@@ -63,29 +63,27 @@ export const useChat = (options: ChatOptions = {}) => {
         }
 
         const data = await response.json();
-        
+
         // Dodaj odpowiedź asystenta do stanu
         const assistantMessage: ChatMessage = {
           role: "assistant",
-          content: data.response
+          content: data.response,
         };
 
         setState((prevState) => ({
           ...prevState,
           messages: [...prevState.messages, assistantMessage],
-          isLoading: false
+          isLoading: false,
         }));
 
         return data.response;
       } catch (error) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : "Nieznany błąd podczas wysyłania wiadomości";
-        
+        const errorMessage = error instanceof Error ? error.message : "Nieznany błąd podczas wysyłania wiadomości";
+
         setState((prevState) => ({
           ...prevState,
           isLoading: false,
-          error: errorMessage
+          error: errorMessage,
         }));
 
         return null;
@@ -98,14 +96,14 @@ export const useChat = (options: ChatOptions = {}) => {
     setState((prevState) => ({
       ...prevState,
       messages: [],
-      error: null
+      error: null,
     }));
   }, []);
 
   const clearError = useCallback(() => {
     setState((prevState) => ({
       ...prevState,
-      error: null
+      error: null,
     }));
   }, []);
 
@@ -116,6 +114,6 @@ export const useChat = (options: ChatOptions = {}) => {
     sendMessage,
     addMessage,
     clearMessages,
-    clearError
+    clearError,
   };
-}; 
+};

@@ -1,0 +1,168 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabaseClient } from "@/db/supabase.client";
+
+export const prerender = false;
+
+// Pobierz ID użytkownika z parametrów URL
+const { userId } = Astro.params;
+
+// Obsługa błędu jeśli brak ID
+if (!userId) {
+  return Astro.redirect("/games");
+}
+
+// Pobierz dane profilu użytkownika
+const { data: profile, error: profileError } = await supabaseClient
+  .from("profiles")
+  .select("first_name, last_name, email, preferred_types")
+  .eq("user_id", userId)
+  .single();
+
+// Pobierz preferencje użytkownika
+const { data: preferences, error: preferencesError } = await supabaseClient
+  .from("preferences")
+  .select("min_players, max_players, preferred_duration, complexity_level, preferred_types")
+  .eq("user_id", userId)
+  .single();
+
+// Obsługa błędu - jeśli użytkownik nie istnieje lub wystąpił inny błąd
+if (profileError || !profile) {
+  return Astro.redirect("/games");
+}
+
+// Pobierz ulubione gry użytkownika (maksymalnie 5)
+const { data: favoriteGames } = await supabaseClient
+  .from("favorite_games")
+  .select(
+    `
+    id,
+    game:board_games (
+      id,
+      title,
+      complexity,
+      min_players,
+      max_players,
+      duration
+    )
+  `,
+  )
+  .eq("user_id", userId)
+  .limit(5);
+
+const safePreferences = preferences || {};
+const safeFavoriteGames = favoriteGames || [];
+---
+
+<Layout title={`Preferencje: ${profile.first_name} ${profile.last_name}`}>
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <a href="javascript:history.back()" class="text-primary mb-4 inline-flex items-center hover:underline">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+            clip-rule="evenodd"></path>
+        </svg>
+        Powrót
+      </a>
+
+      <Card class="mb-6">
+        <CardHeader>
+          <CardTitle class="text-2xl">Preferencje: {profile.first_name} {profile.last_name}</CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-lg font-medium mb-4">Profil</h3>
+              <div class="space-y-3">
+                <div>
+                  <p class="text-sm text-gray-500">Imię i nazwisko</p>
+                  <p class="font-medium">{profile.first_name} {profile.last_name}</p>
+                </div>
+                {
+                  profile.email && (
+                    <div>
+                      <p class="text-sm text-gray-500">Email</p>
+                      <p class="font-medium">{profile.email}</p>
+                    </div>
+                  )
+                }
+                {
+                  profile.preferred_types && profile.preferred_types.length > 0 && (
+                    <div>
+                      <p class="text-sm text-gray-500">Preferowane typy gier</p>
+                      <div class="flex flex-wrap gap-2 mt-1">
+                        {profile.preferred_types.map((type: string) => (
+                          <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{type}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-medium mb-4">Szczegółowe preferencje</h3>
+              {
+                preferences ? (
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-sm text-gray-500">Liczba graczy</p>
+                      <p class="font-medium">
+                        {safePreferences.min_players || "?"}-{safePreferences.max_players || "?"}
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500">Czas gry</p>
+                      <p class="font-medium">{safePreferences.preferred_duration || "?"} min</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500">Poziom złożoności</p>
+                      <p class="font-medium">{safePreferences.complexity_level || "?"}/5</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p class="text-gray-500">Brak szczegółowych preferencji</p>
+                )
+              }
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-medium mb-4">Ulubione gry</h3>
+            {
+              safeFavoriteGames.length > 0 ? (
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {safeFavoriteGames.map((item) => (
+                    <a
+                      href={`/games/${item.game.id}`}
+                      class="block p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <h4 class="font-medium text-primary">{item.game.title}</h4>
+                      <div class="text-xs text-gray-600 mt-1">
+                        <span>
+                          {item.game.min_players}
+                          {item.game.max_players && item.game.min_players !== item.game.max_players
+                            ? `-${item.game.max_players}`
+                            : ""}{" "}
+                          graczy
+                        </span>
+                        <span class="mx-1">•</span>
+                        <span>{item.game.duration} min</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p class="text-gray-500">Brak ulubionych gier</p>
+              )
+            }
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </main>
+</Layout>

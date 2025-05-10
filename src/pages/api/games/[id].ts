@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { GamesService } from '@/lib/services/games.service';
-import { handleError } from '@/lib/utils/api';
+import type { APIRoute } from "astro";
+import { GamesService } from "@/lib/services/games.service";
+import { handleError } from "@/lib/utils/api";
 
 export const prerender = false;
 
@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ locals, params }) => {
     const { id } = params;
 
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID gry jest wymagane' }), { status: 400 });
+      return new Response(JSON.stringify({ error: "ID gry jest wymagane" }), { status: 400 });
     }
 
     const gamesService = new GamesService();
@@ -19,4 +19,4 @@ export const GET: APIRoute = async ({ locals, params }) => {
   } catch (error) {
     return handleError(error);
   }
-}; 
+};

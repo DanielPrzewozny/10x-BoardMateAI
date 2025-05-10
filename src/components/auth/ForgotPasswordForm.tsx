@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useFormValidation } from '../hooks/useFormValidation';
+import { useState } from "react";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useFormValidation } from "../hooks/useFormValidation";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Nieprawidłowy format adresu email')
+  email: z.string().email("Nieprawidłowy format adresu email"),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -21,7 +21,7 @@ export function ForgotPasswordForm() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
-      email: formData.get('email') as string
+      email: formData.get("email") as string,
     };
 
     const validationResult = validate(data);
@@ -39,14 +39,10 @@ export function ForgotPasswordForm() {
       <div className="text-center space-y-4">
         <Alert>
           <AlertDescription>
-            Link do resetowania hasła został wysłany na podany adres email.
-            Sprawdź swoją skrzynkę odbiorczą.
+            Link do resetowania hasła został wysłany na podany adres email. Sprawdź swoją skrzynkę odbiorczą.
           </AlertDescription>
         </Alert>
-        <a
-          href="/auth/login"
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
+        <a href="/auth/login" className="text-sm text-blue-600 hover:text-blue-800">
           Wróć do strony logowania
         </a>
       </div>
@@ -57,13 +53,7 @@ export function ForgotPasswordForm() {
     <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="twoj@email.com"
-          aria-describedby="email-error"
-        />
+        <Input id="email" name="email" type="email" placeholder="twoj@email.com" aria-describedby="email-error" />
         {errors.email && (
           <p className="text-sm text-red-500" id="email-error">
             {errors.email}
@@ -82,13 +72,10 @@ export function ForgotPasswordForm() {
       </Button>
 
       <p className="text-center text-sm text-gray-600">
-        <a
-          href="/auth/login"
-          className="text-blue-600 hover:text-blue-800"
-        >
+        <a href="/auth/login" className="text-blue-600 hover:text-blue-800">
           Wróć do strony logowania
         </a>
       </p>
     </form>
   );
-} 
+}

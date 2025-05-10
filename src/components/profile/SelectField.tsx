@@ -1,27 +1,21 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import type { Control } from "react-hook-form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import type { Control } from "react-hook-form";
 
 interface SelectOption {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 interface SelectFieldProps {
-  name: string
-  label: string
-  options: SelectOption[]
-  control: Control<any>
-  rules?: Record<string, any>
+  name: string;
+  label: string;
+  options: SelectOption[];
+  control: Control<any>;
+  rules?: Record<string, any>;
 }
 
-export function SelectField({
-  name,
-  label,
-  options,
-  control,
-  rules
-}: SelectFieldProps) {
+export function SelectField({ name, label, options, control, rules }: SelectFieldProps) {
   return (
     <FormField
       control={control}
@@ -48,5 +42,5 @@ export function SelectField({
         </FormItem>
       )}
     />
-  )
-} 
+  );
+}

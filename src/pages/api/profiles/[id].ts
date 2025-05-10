@@ -1,12 +1,11 @@
-import type { APIRoute } from 'astro';
-import { ProfilesService, updateProfileSchema } from '@/lib/services/profiles.service';
-import { handleError } from '@/lib/utils/api';
+import type { APIRoute } from "astro";
+import { ProfilesService, updateProfileSchema } from "@/lib/services/profiles.service";
+import { handleError } from "@/lib/utils/api";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ locals, params }) => {
   try {
-
     //const { id } = params;
     //if (!id) {
     //  return new Response(JSON.stringify({ error: 'ID użytkownika jest wymagane' }), { status: 400 });
@@ -28,10 +27,9 @@ export const GET: APIRoute = async ({ locals, params }) => {
 
 export const PATCH: APIRoute = async ({ locals, params, request }) => {
   try {
-
     const { id } = params;
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID użytkownika jest wymagane' }), { status: 400 });
+      return new Response(JSON.stringify({ error: "ID użytkownika jest wymagane" }), { status: 400 });
     }
 
     // Sprawdzenie uprawnień - tylko własny profil lub admin
@@ -49,4 +47,4 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   } catch (error) {
     return handleError(error);
   }
-}; 
+};

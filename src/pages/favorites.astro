@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+import FavoriteGames from "@/components/FavoriteGames";
+import { supabaseClient } from "@/db/supabase.client";
+
+// Sprawdź, czy użytkownik jest zalogowany
+const {
+  data: { session },
+} = await supabaseClient.auth.getSession();
+
+// Jeśli użytkownik nie jest zalogowany, przekieruj go na stronę logowania
+if (!session) {
+  return Astro.redirect("/auth/login");
+}
+---
+
+<Layout title="Ulubione gry">
+  <FavoriteGames client:load />
+</Layout>

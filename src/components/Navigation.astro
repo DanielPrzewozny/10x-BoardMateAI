@@ -1,7 +1,9 @@
 ---
-import { supabaseClient } from '@/db/supabase.client';
+import { supabaseClient } from "@/db/supabase.client";
 
-const { data: { session } } = await supabaseClient.auth.getSession();
+const {
+  data: { session },
+} = await supabaseClient.auth.getSession();
 const isLoggedIn = !!session;
 ---
 
@@ -11,9 +13,7 @@ const isLoggedIn = !!session;
       <div class="flex">
         <!-- Logo -->
         <div class="flex-shrink-0 flex items-center">
-          <a href="/" class="text-2xl font-bold text-blue-600">
-            BoardMateAI
-          </a>
+          <a href="/" class="text-2xl font-bold text-blue-600"> BoardMateAI </a>
         </div>
 
         <!-- Główne linki nawigacyjne -->
@@ -45,6 +45,12 @@ const isLoggedIn = !!session;
                 >
                   Historia
                 </a>
+                <a
+                  href="/favorites"
+                  class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-blue-500"
+                >
+                  Ulubione gry
+                </a>
               </>
             )
           }
@@ -56,26 +62,16 @@ const isLoggedIn = !!session;
         {
           isLoggedIn ? (
             <div class="flex items-center space-x-4">
-              <a
-                href="/profile"
-                class="text-sm font-medium text-gray-900 hover:text-blue-600"
-              >
+              <a href="/profile" class="text-sm font-medium text-gray-900 hover:text-blue-600">
                 Profil
               </a>
-              <button
-                type="button"
-                id="logout-button"
-                class="text-sm font-medium text-gray-900 hover:text-blue-600"
-              >
+              <button type="button" id="logout-button" class="text-sm font-medium text-gray-900 hover:text-blue-600">
                 Wyloguj się
               </button>
             </div>
           ) : (
             <div class="flex items-center space-x-4">
-              <a
-                href="/auth/login"
-                class="text-sm font-medium text-gray-900 hover:text-blue-600"
-              >
+              <a href="/auth/login" class="text-sm font-medium text-gray-900 hover:text-blue-600">
                 Zaloguj się
               </a>
               <a
@@ -107,12 +103,7 @@ const isLoggedIn = !!session;
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
       </div>
@@ -122,12 +113,7 @@ const isLoggedIn = !!session;
   <!-- Menu mobilne -->
   <div class="sm:hidden hidden" id="mobile-menu">
     <div class="pt-2 pb-3 space-y-1">
-      <a
-        href="/"
-        class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-      >
-        Strona główna
-      </a>
+      <a href="/" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"> Strona główna </a>
       {
         isLoggedIn && (
           <>
@@ -137,22 +123,16 @@ const isLoggedIn = !!session;
             >
               Rekomendacje
             </a>
-            <a
-              href="/games"
-              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-            >
+            <a href="/games" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
               Katalog gier
             </a>
-            <a
-              href="/history"
-              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-            >
+            <a href="/history" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
               Historia
             </a>
-            <a
-              href="/profile"
-              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-            >
+            <a href="/favorites" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
+              Ulubione gry
+            </a>
+            <a href="/profile" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
               Profil
             </a>
             <button
@@ -168,16 +148,10 @@ const isLoggedIn = !!session;
       {
         !isLoggedIn && (
           <>
-            <a
-              href="/auth/login"
-              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-            >
+            <a href="/auth/login" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
               Zaloguj się
             </a>
-            <a
-              href="/auth/register"
-              class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-            >
+            <a href="/auth/register" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">
               Zarejestruj się
             </a>
           </>
@@ -188,29 +162,29 @@ const isLoggedIn = !!session;
 </nav>
 
 <script>
-  import { supabaseClient } from '@/db/supabase.client';
+  import { supabaseClient } from "@/db/supabase.client";
 
   // Obsługa menu mobilnego
-  const mobileMenuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuButton = document.getElementById("mobile-menu-button");
+  const mobileMenu = document.getElementById("mobile-menu");
 
-  mobileMenuButton?.addEventListener('click', () => {
-    mobileMenu?.classList.toggle('hidden');
+  mobileMenuButton?.addEventListener("click", () => {
+    mobileMenu?.classList.toggle("hidden");
   });
 
   // Obsługa wylogowywania
   const handleLogout = async () => {
     try {
       await supabaseClient.auth.signOut();
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Błąd podczas wylogowywania:', error);
+      console.error("Błąd podczas wylogowywania:", error);
     }
   };
 
-  const logoutButton = document.getElementById('logout-button');
-  const mobileLogoutButton = document.getElementById('mobile-logout-button');
+  const logoutButton = document.getElementById("logout-button");
+  const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-  logoutButton?.addEventListener('click', handleLogout);
-  mobileLogoutButton?.addEventListener('click', handleLogout);
+  logoutButton?.addEventListener("click", handleLogout);
+  mobileLogoutButton?.addEventListener("click", handleLogout);
 </script>

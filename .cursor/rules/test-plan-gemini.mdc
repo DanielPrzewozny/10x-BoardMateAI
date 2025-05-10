@@ -1,0 +1,286 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Plan Testów dla Projektu BoardMateAI
+
+## 1. Wprowadzenie i Cele Testowania
+
+### 1.1. Wprowadzenie
+
+Niniejszy dokument określa strategię, zakres, podejście oraz zasoby wymagane do przeprowadzenia testów aplikacji BoardMateAI. BoardMateAI to aplikacja webowa stworzona w oparciu o Astro i React, wykorzystująca Supabase jako backend (BaaS) oraz OpenRouter AI do generowania rekomendacji gier planszowych. Plan ten ma na celu zapewnienie systematycznego podejścia do weryfikacji jakości oprogramowania na różnych etapach jego rozwoju.
+
+### 1.2. Cele Testowania
+
+Główne cele procesu testowania dla projektu BoardMateAI to:
+
+*   Weryfikacja, czy wszystkie funkcjonalności aplikacji działają zgodnie ze specyfikacją i oczekiwaniami użytkowników.
+*   Identyfikacja i raportowanie defektów oprogramowania.
+*   Zapewnienie stabilności, wydajności i niezawodności aplikacji.
+*   Weryfikacja poprawności integracji z usługami zewnętrznymi (Supabase, OpenRouter AI).
+*   Zapewnienie bezpieczeństwa danych użytkowników i poprawnego działania mechanizmów autentykacji i autoryzacji.
+*   Ocena użyteczności i doświadczenia użytkownika (UX).
+*   Potwierdzenie, że aplikacja spełnia zdefiniowane kryteria akceptacji przed wdrożeniem na środowisko produkcyjne.
+
+## 2. Zakres Testów
+
+### 2.1. Funkcjonalności objęte testami (In-Scope)
+
+*   **Moduł Autentykacji:**
+    *   Rejestracja nowych użytkowników.
+    *   Logowanie użytkowników.
+    *   Wylogowywanie użytkowników.
+    *   Proces resetowania hasła (jeśli zaimplementowany).
+    *   Zarządzanie sesją użytkownika (utrzymanie sesji, wygasanie).
+    *   Obsługa błędów autentykacji.
+*   **Moduł Rekomendacji AI:**
+    *   Formularz wprowadzania preferencji (walidacja, przesyłanie danych).
+    *   Integracja z API OpenRouter (wysyłanie promptów, odbieranie odpowiedzi).
+    *   Parsowanie i wyświetlanie rekomendacji gier.
+    *   Obsługa stanów ładowania i błędów API AI.
+    *   Zapisywanie wygenerowanych rekomendacji przez użytkownika.
+*   **Moduł Zapisanych Rekomendacji:**
+    *   Wyświetlanie listy zapisanych rekomendacji.
+    *   Usuwanie zapisanych rekomendacji.
+    *   Obsługa paginacji (jeśli dotyczy).
+*   **Katalog Gier:**
+    *   Wyświetlanie listy gier planszowych.
+    *   Paginacja katalogu gier.
+    *   Wyszukiwanie/filtrowanie gier (jeśli zaimplementowane).
+    *   Wyświetlanie szczegółów pojedynczej gry.
+*   **Moduł Ulubionych Gier:**
+    *   Dodawanie gier do ulubionych (z katalogu, ze szczegółów gry).
+    *   Usuwanie gier z ulubionych.
+    *   Wyświetlanie listy ulubionych gier.
+    *   Paginacja listy ulubionych gier.
+*   **Profil Użytkownika:**
+    *   Wyświetlanie danych profilu.
+    *   Edycja danych profilu (imię, nazwisko).
+    *   Wyświetlanie i edycja preferencji gier użytkownika.
+    *   Przełączanie między zakładkami profilu i preferencji.
+*   **Czat AI:**
+    *   Wysyłanie wiadomości do asystenta AI.
+    *   Odbieranie i wyświetlanie odpowiedzi AI.
+    *   Obsługa stanów ładowania i błędów w czacie.
+    *   Czyszczenie historii czatu.
+*   **Nawigacja i Układ (Layout):**
+    *   Poprawność działania głównej nawigacji i paska bocznego (Sidebar).
+    *   Poprawne wyświetlanie elementów layoutu (nagłówek, stopka - jeśli istnieje).
+    *   Responsywność interfejsu na różnych rozmiarach ekranu.
+*   **Ogólne:**
+    *   Obsługa błędów (wyświetlanie komunikatów, logowanie).
+    *   Walidacja danych wejściowych w formularzach.
+    *   Poprawność działania komponentów UI (Shadcn).
+
+### 2.2. Funkcjonalności wyłączone z testów (Out-of-Scope)
+
+*   Testowanie wewnętrznej logiki działania Supabase (poza weryfikacją poprawności konfiguracji i interakcji).
+*   Testowanie wewnętrznej logiki działania API OpenRouter (skupienie na integracji i obsłudze odpowiedzi).
+*   Testowanie wydajności pod bardzo dużym obciążeniem (chyba że zostanie to zdefiniowane jako osobny cel).
+*   Testowanie na bardzo starych lub niszowych przeglądarkach (chyba że zdefiniowano inaczej).
+*   Testowanie kodu źródłowego bibliotek zewnętrznych (React, Astro, Shadcn, itp.).
+
+## 3. Typy Testów do Przeprowadzenia
+
+W projekcie BoardMateAI zostaną przeprowadzone następujące typy testów:
+
+*   **Testy Jednostkowe (Unit Tests):**
+    *   Cel: Weryfikacja poprawności działania izolowanych fragmentów kodu (funkcje, metody serwisów, proste komponenty).
+    *   Zakres: Funkcje pomocnicze (`utils.ts`), logika serwisów (`*.service.ts`), złożone funkcje w hookach (np. logika parsowania w `useRecommendations`), walidatory Zod.
+    *   Narzędzia: Vitest.
+*   **Testy Integracyjne (Integration Tests):**
+    *   Cel: Weryfikacja poprawnej współpracy między różnymi modułami/komponentami systemu.
+    *   Zakres: Interakcja komponentów React (np. Formularz -> Lista), integracja komponentów z hookami i serwisami (np. `RecommendationForm` + `useRecommendations` + `RecommendationService`), integracja serwisów z Supabase (CRUD, Auth), integracja `RecommendationService` z API OpenRouter.
+    *   Narzędzia: Vitest, React Testing Library, dedykowana instancja testowa Supabase, Mock Service Worker (MSW) do mockowania API AI.
+*   **Testy End-to-End (E2E Tests):**
+    *   Cel: Weryfikacja kompletnych przepływów użytkownika z perspektywy przeglądarki, symulując rzeczywiste interakcje.
+    *   Zakres: Scenariusze takie jak: rejestracja -> logowanie -> generowanie rekomendacji -> zapisanie rekomendacji -> wylogowanie; przeglądanie katalogu -> dodanie do ulubionych -> sprawdzenie listy ulubionych.
+    *   Narzędzia: Playwright lub Cypress.
+*   **Testy Interfejsu Użytkownika (UI Tests) / Testy Wizualne:**
+    *   Cel: Weryfikacja poprawności wyświetlania elementów UI, responsywności i spójności wizualnej.
+    *   Zakres: Kluczowe widoki aplikacji (Strona główna, Katalog, Rekomendacje, Profil), responsywność na popularnych rozdzielczościach (desktop, tablet, mobile).
+    *   Narzędzia: Testy manualne, ewentualnie narzędzia do regresji wizualnej (np. integracja Playwright/Cypress z Percy/Chromatic).
+*   **Testy Wydajnościowe (Performance Tests - podstawowe):**
+    *   Cel: Identyfikacja potencjalnych wąskich gardeł wydajnościowych.
+    *   Zakres: Czas ładowania kluczowych stron (Katalog Gier), czas odpowiedzi API (zwłaszcza `/api/recommendations`), czas odpowiedzi bazy danych dla typowych zapytań.
+    *   Narzędzia: Narzędzia deweloperskie przeglądarki (Lighthouse, Performance tab), ewentualnie proste testy API za pomocą k6.
+*   **Testy Bezpieczeństwa (Security Tests - podstawowe):**
+    *   Cel: Identyfikacja podstawowych luk bezpieczeństwa.
+    *   Zakres: Weryfikacja procesu autentykacji, zarządzania sesją, ochrona przed podstawowymi atakami (np. XSS poprzez walidację inputów), weryfikacja autoryzacji dostępu do danych (np. czy użytkownik A może modyfikować ulubione użytkownika B).
+    *   Narzędzia: Testy manualne, przegląd kodu, ewentualnie podstawowe skanery (np. OWASP ZAP).
+*   **Testy Akceptacyjne Użytkownika (UAT):**
+    *   Cel: Potwierdzenie przez interesariuszy (np. Product Ownera), że aplikacja spełnia wymagania biznesowe i jest gotowa do wdrożenia.
+    *   Zakres: Przejście przez kluczowe scenariusze użytkownika w środowisku zbliżonym do produkcyjnego.
+    *   Narzędzia: Testy manualne.
+
+## 4. Scenariusze Testowe dla Kluczowych Funkcjonalności
+
+Poniżej przedstawiono przykładowe, wysokopoziomowe scenariusze testowe. Szczegółowe przypadki testowe zostaną opracowane w osobnym dokumencie lub narzędziu do zarządzania testami.
+
+### 4.1. Autentykacja
+
+*   **Rejestracja:**
+    *   Pomyślna rejestracja z poprawnymi danymi.
+    *   Próba rejestracji z istniejącym adresem email.
+    *   Próba rejestracji z niepoprawnym formatem email.
+    *   Próba rejestracji ze słabym hasłem (niespełniającym wymagań).
+    *   Próba rejestracji z różnymi hasłami w polach "hasło" i "potwierdź hasło".
+*   **Logowanie:**
+    *   Pomyślne logowanie z poprawnymi danymi.
+    *   Próba logowania z niepoprawnym hasłem.
+    *   Próba logowania z nieistniejącym adresem email.
+    *   Utrzymanie sesji po zamknięciu i ponownym otwarciu przeglądarki.
+*   **Wylogowanie:**
+    *   Pomyślne wylogowanie i przekierowanie na stronę główną/logowania.
+    *   Brak dostępu do chronionych zasobów po wylogowaniu.
+
+### 4.2. Rekomendacje AI
+
+*   **Generowanie Rekomendacji:**
+    *   Pomyślne wygenerowanie rekomendacji po wypełnieniu formularza poprawnymi danymi (min. długość opisu).
+    *   Wyświetlenie komunikatu błędu walidacji przy próbie wysłania formularza z niepoprawnymi danymi (np. za krótki opis).
+    *   Wyświetlenie stanu ładowania podczas generowania rekomendacji.
+    *   Poprawne parsowanie i wyświetlenie listy rekomendacji w oczekiwanym formacie (karty gier).
+    *   Obsługa błędu odpowiedzi z API OpenRouter (wyświetlenie komunikatu użytkownikowi).
+    *   Brak możliwości generowania rekomendacji przez niezalogowanego użytkownika (przekierowanie/komunikat).
+*   **Zapisywanie Rekomendacji:**
+    *   Pomyślne zapisanie wybranej rekomendacji przez zalogowanego użytkownika.
+    *   Wyświetlenie potwierdzenia zapisu (np. zmiana ikony przycisku, toast).
+    *   Brak możliwości zapisania rekomendacji przez niezalogowanego użytkownika.
+
+### 4.3. Katalog Gier i Ulubione
+
+*   **Katalog:**
+    *   Poprawne wyświetlenie pierwszej strony katalogu gier.
+    *   Poprawne działanie paginacji (przechodzenie do następnej/poprzedniej strony, skok do konkretnej strony).
+    *   Wyświetlenie komunikatu o braku gier, jeśli katalog jest pusty.
+*   **Ulubione:**
+    *   Pomyślne dodanie gry do ulubionych z widoku katalogu.
+    *   Pomyślne dodanie gry do ulubionych z widoku szczegółów gry.
+    *   Wyświetlenie dodanej gry na liście ulubionych.
+    *   Próba dodania tej samej gry ponownie (oczekiwany brak możliwości lub komunikat).
+    *   Pomyślne usunięcie gry z listy ulubionych.
+    *   Poprawne działanie paginacji na liście ulubionych.
+    *   Przekierowanie na stronę logowania przy próbie dostępu do ulubionych przez niezalogowanego użytkownika.
+
+### 4.4. Profil Użytkownika
+
+*   **Wyświetlanie:**
+    *   Poprawne wyświetlenie danych użytkownika (imię, nazwisko, email, status, data dołączenia).
+    *   Poprawne wyświetlenie zapisanych preferencji gier.
+*   **Edycja:**
+    *   Pomyślna aktualizacja imienia i nazwiska.
+    *   Pomyślna aktualizacja preferencji gier (liczba graczy, czas, złożoność, typy, budżet).
+    *   Walidacja danych wejściowych podczas edycji.
+    *   Wyświetlenie komunikatu potwierdzającego zapisanie zmian.
+    *   Blokada możliwości edycji adresu email.
+
+### 4.5. Czat AI
+
+*   Wysłanie wiadomości i wyświetlenie jej w oknie czatu.
+*   Wyświetlenie stanu ładowania podczas oczekiwania na odpowiedź AI.
+*   Poprawne wyświetlenie odpowiedzi AI.
+*   Obsługa błędów komunikacji z API czatu.
+*   Poprawne działanie przycisku czyszczenia historii czatu.
+
+## 5. Środowisko Testowe
+
+*   **Środowisko Deweloperskie (Lokalne):** Do przeprowadzania testów jednostkowych i integracyjnych przez deweloperów podczas kodowania.
+*   **Środowisko Testowe/Staging:** Osobna instancja aplikacji wdrożona na serwerze, zintegrowana z dedykowaną, odizolowaną instancją Supabase (testową) oraz (opcjonalnie) osobnym kluczem API OpenRouter (lub mockowanym API). Środowisko to będzie używane do testów integracyjnych, E2E, manualnych i UAT. Baza danych na tym środowisku powinna być regularnie czyszczona i wypełniana zestawem danych testowych.
+*   **Środowisko Produkcyjne:** Środowisko, na którym działa aplikacja dostępna dla użytkowników końcowych. Na tym środowisku przeprowadzane będą jedynie testy typu "smoke tests" po każdym wdrożeniu.
+
+**Przeglądarki:** Testy będą przeprowadzane na najnowszych wersjach przeglądarek:
+*   Google Chrome
+*   Mozilla Firefox
+*   (Opcjonalnie) Safari
+*   (Opcjonalnie) Microsoft Edge
+
+**Urządzenia:** Testy responsywności będą przeprowadzane z użyciem narzędzi deweloperskich przeglądarki oraz (opcjonalnie) na wybranych urządzeniach fizycznych/emulatorach dla rozdzielczości:
+*   Desktop (np. 1920x1080)
+*   Tablet (np. 768x1024)
+*   Mobile (np. 375x667)
+
+## 6. Narzędzia do Testowania
+
+*   **Testy Jednostkowe/Integracyjne:** Vitest, React Testing Library
+*   **Testy E2E:** Playwright (preferowany) lub Cypress
+*   **Mockowanie API:** Mock Service Worker (MSW)
+*   **Baza Danych Testowych:** Dedykowana instancja Supabase
+*   **Analiza Wydajności:** Narzędzia deweloperskie przeglądarki (Lighthouse, Performance), k6 (opcjonalnie)
+*   **Testy Bezpieczeństwa:** Manualny przegląd, OWASP ZAP (opcjonalnie, podstawowe skany)
+*   **Zarządzanie Testami i Błędami:** Jira, Trello, lub inne narzędzie do śledzenia zadań i błędów.
+*   **Repozytorium Kodu i CI/CD:** Git, GitHub/GitLab (z integracją do automatycznego uruchamiania testów).
+
+## 7. Harmonogram Testów (Przykładowy)
+
+*   **Testy Jednostkowe i Integracyjne:** Przeprowadzane ciągle, równolegle z rozwojem funkcjonalności przez deweloperów. Powinny być częścią procesu CI.
+*   **Testy E2E:** Uruchamiane automatycznie w procesie CI/CD (np. przed merge do głównej gałęzi, przed wdrożeniem na Staging/Produkcję). Rozwijane iteracyjnie wraz z rozwojem aplikacji.
+*   **Testy Manualne/Exploratory:** Przeprowadzane przed końcem sprintu/iteracji na środowisku Staging.
+*   **Testy Wydajnościowe:** Przeprowadzane przed większymi wdrożeniami lub na żądanie.
+*   **Testy Bezpieczeństwa:** Przeprowadzane okresowo lub przed wdrożeniem istotnych zmian w module autentykacji/zarządzania danymi.
+*   **Testy Regresji:** Przeprowadzane przed każdym wdrożeniem na środowisko produkcyjne (automatyczne i/lub manualne kluczowe scenariusze).
+*   **UAT:** Przeprowadzane na środowisku Staging po zakończeniu testów QA, przed finalnym wdrożeniem.
+
+## 8. Kryteria Akceptacji Testów
+
+### 8.1. Kryteria Wejścia (Rozpoczęcia Testów)
+
+*   Kod źródłowy został skompilowany i wdrożony na odpowiednie środowisko testowe.
+*   Środowisko testowe jest stabilne i skonfigurowane.
+*   Dostępne są wymagania funkcjonalne i/lub historyjki użytkownika.
+*   Zakończono testy jednostkowe i integracyjne dla danej funkcjonalności (zgodnie z definicją ukończenia - Definition of Done).
+
+### 8.2. Kryteria Wyjścia (Zakończenia Testów)
+
+*   Wszystkie zaplanowane przypadki testowe (manualne i automatyczne) zostały wykonane.
+*   Osiągnięto zdefiniowany próg pokrycia kodu testami (np. 80% dla testów jednostkowych/integracyjnych - do ustalenia z zespołem).
+*   Wszystkie zidentyfikowane błędy krytyczne (Blocker, Critical) zostały naprawione i retestowane pomyślnie.
+*   Liczba otwartych błędów o niższym priorytecie (Major, Minor) jest akceptowalna przez zespół i Product Ownera.
+*   Wyniki testów zostały udokumentowane i zaraportowane.
+*   Spełnione zostały kryteria wydajnościowe i bezpieczeństwa (jeśli były testowane).
+*   Otrzymano akceptację UAT (jeśli dotyczy).
+
+## 9. Role i Odpowiedzialności w Procesie Testowania
+
+*   **Deweloperzy:**
+    *   Pisanie testów jednostkowych i integracyjnych dla tworzonego kodu.
+    *   Naprawianie błędów zgłoszonych przez QA/Użytkowników.
+    *   Uczestniczenie w przeglądach kodu pod kątem testowalności.
+    *   Utrzymanie i aktualizacja testów automatycznych.
+*   **Inżynierowie QA:**
+    *   Tworzenie i utrzymanie planu testów oraz przypadków testowych.
+    *   Projektowanie, implementacja i utrzymanie testów automatycznych (Integracyjne, E2E).
+    *   Wykonywanie testów manualnych (funkcjonalnych, eksploracyjnych, regresji).
+    *   Przeprowadzanie podstawowych testów wydajnościowych i bezpieczeństwa.
+    *   Raportowanie i śledzenie błędów.
+    *   Konfiguracja i zarządzanie środowiskiem testowym.
+    *   Komunikacja statusu testów i jakości oprogramowania zespołowi.
+*   **Product Owner / Interesariusze:**
+    *   Dostarczanie wymagań i kryteriów akceptacji.
+    *   Uczestniczenie w testach akceptacyjnych użytkownika (UAT).
+    *   Podejmowanie decyzji dotyczących priorytetów błędów i ryzyka wdrożenia.
+
+## 10. Procedury Raportowania Błędów
+
+*   **Narzędzie:** Do raportowania błędów będzie używane narzędzie [Nazwa Narzędzia, np. Jira, Trello].
+*   **Proces Zgłaszania:** Każdy znaleziony błąd powinien zostać zgłoszony jako osobne zadanie/ticket w systemie.
+*   **Wymagane Informacje w Zgłoszeniu Błędu:**
+    *   Tytuł: Krótki, zwięzły opis problemu.
+    *   Opis: Szczegółowy opis błędu.
+    *   Kroki do Reprodukcji: Dokładna sekwencja czynności prowadząca do wystąpienia błędu.
+    *   Wynik Oczekiwany: Jak system powinien się zachować.
+    *   Wynik Rzeczywisty: Jak system się zachował.
+    *   Środowisko: Wersja aplikacji, przeglądarka, system operacyjny, środowisko testowe (np. Staging).
+    *   Priorytet/Waga (Severity): np. Blocker, Critical, Major, Minor, Trivial.
+    *   Załączniki: Zrzuty ekranu, nagrania wideo, logi konsoli/sieciowe (jeśli relevantne).
+    *   Osoba zgłaszająca.
+*   **Cykl Życia Błędu (Przykładowy):**
+    1.  New/Open: Zgłoszony błąd.
+    2.  Assigned/In Progress: Błąd przypisany do dewelopera, trwają prace nad naprawą.
+    3.  Resolved/Fixed: Błąd naprawiony przez dewelopera, gotowy do retestu.
+    4.  Ready for Testing/In QA: Błąd oczekuje na weryfikację przez QA.
+    5.  Verified/Closed: QA potwierdził naprawę błędu.
+    6.  Reopened: QA stwierdził, że błąd nadal występuje lub naprawa jest niepełna.
+
+    7.  Rejected/Won't Fix: Błąd odrzucony (np. duplikat, nie jest błędem, odłożony na później).

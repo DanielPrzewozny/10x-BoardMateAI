@@ -30,7 +30,7 @@ export interface ModelParams {
  * Interfejs dla formatu odpowiedzi
  */
 export interface ResponseFormat {
-  type: 'json_schema';
+  type: "json_schema";
   json_schema: {
     name: string;
     strict: boolean;
@@ -42,7 +42,7 @@ export interface ResponseFormat {
  * Interfejs dla komunikatów w czacie
  */
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -76,7 +76,7 @@ export interface OpenRouterOptions {
  * Wiadomość dla OpenRouter API
  */
 export interface OpenRouterMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -84,7 +84,7 @@ export interface OpenRouterMessage {
  * Format odpowiedzi OpenRouter
  */
 export interface OpenRouterResponseFormat {
-  type: 'json_schema' | 'text';
+  type: "json_schema" | "text";
   json_schema?: {
     name: string;
     strict?: boolean;
@@ -109,4 +109,4 @@ export interface ChatCompletionCreateParams {
   seed?: number;
   tools?: any[];
   tool_choice?: string | { function: { name: string } };
-} 
+}

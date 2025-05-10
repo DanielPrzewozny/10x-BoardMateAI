@@ -1,15 +1,15 @@
-import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from '@/db/supabase.client';
-import { z } from 'zod';
+import { supabaseClient, DEFAULT_USER_ID, type SupabaseClient } from "@/db/supabase.client";
+import { z } from "zod";
 
 export const favoriteGameSchema = z.object({
   gameId: z.string().uuid(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
 });
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
-  sort: z.enum(['addedAt', 'title']).default('addedAt')
+  sort: z.enum(["added_at", "title"]).default("added_at"),
 });
 
 export type FavoriteGameInput = z.infer<typeof favoriteGameSchema>;
@@ -22,8 +22,9 @@ export class FavoritesService {
     const offset = (page - 1) * limit;
 
     const query = this.supabase
-      .from('favorite_games')
-      .select(`
+      .from("favorite_games")
+      .select(
+        `
         id,
         game_id,
         added_at,
@@ -38,14 +39,15 @@ export class FavoritesService {
           description,
           is_archived
         )
-      `)
-      .eq('user_id', userId)
+      `
+      )
+      .eq("user_id", userId)
       .range(offset, offset + limit - 1);
 
-    if (sort === 'title') {
-      query.order('game(title)', { ascending: true });
+    if (sort === "title") {
+      query.order("game(title)", { ascending: true });
     } else {
-      query.order('added_at', { ascending: false });
+      query.order("added_at", { ascending: false });
     }
 
     const { data: items, error, count } = await query.returns<any>();
@@ -58,47 +60,48 @@ export class FavoritesService {
       items,
       total: count || 0,
       page,
-      limit
+      limit,
     };
   }
 
   async addFavorite(userId: string, { gameId, notes }: FavoriteGameInput) {
     // Sprawdzenie czy gra istnieje i nie jest zarchiwizowana
     const { data: game, error: gameError } = await this.supabase
-      .from('board_games')
-      .select('is_archived')
-      .eq('id', gameId)
+      .from("board_games")
+      .select("is_archived")
+      .eq("id", gameId)
       .single();
 
     if (gameError || !game) {
-      throw new Error('Nie znaleziono gry');
+      throw new Error("Nie znaleziono gry");
     }
 
     if (game.is_archived) {
-      throw new Error('Nie można dodać zarchiwizowanej gry do ulubionych');
+      throw new Error("Nie można dodać zarchiwizowanej gry do ulubionych");
     }
 
     // Sprawdzenie czy gra nie jest już w ulubionych
     const { data: existing, error: existingError } = await this.supabase
-      .from('favorite_games')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('game_id', gameId)
+      .from("favorite_games")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("game_id", gameId)
       .single();
 
     if (existing) {
-      throw new Error('Gra jest już w ulubionych');
+      throw new Error("Gra jest już w ulubionych");
     }
 
     const { data, error } = await this.supabase
-      .from('favorite_games')
+      .from("favorite_games")
       .insert({
         user_id: userId,
         game_id: gameId,
         notes,
-        added_at: new Date().toISOString()
+        added_at: new Date().toISOString(),
       })
-      .select(`
+      .select(
+        `
         id,
         game_id,
         added_at,
@@ -113,7 +116,8 @@ export class FavoritesService {
           description,
           is_archived
         )
-      `)
+      `
+      )
       .single();
 
     if (error) {
@@ -124,14 +128,10 @@ export class FavoritesService {
   }
 
   async removeFavorite(userId: string, gameId: string) {
-    const { error } = await this.supabase
-      .from('favorite_games')
-      .delete()
-      .eq('user_id', userId)
-      .eq('game_id', gameId);
+    const { error } = await this.supabase.from("favorite_games").delete().eq("user_id", userId).eq("game_id", gameId);
 
     if (error) {
       throw new Error(`Błąd podczas usuwania gry z ulubionych: ${error.message}`);
     }
   }
-} 
+}

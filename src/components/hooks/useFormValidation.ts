@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { z } from 'zod';
+import { useState } from "react";
+import { z } from "zod";
 
 type ValidationErrors<T> = {
   [K in keyof T]?: string;
@@ -10,7 +10,7 @@ export function useFormValidation<T extends Record<string, unknown>>(schema: z.Z
 
   const validate = (data: unknown) => {
     const result = schema.safeParse(data);
-    
+
     if (!result.success) {
       const formattedErrors: ValidationErrors<T> = {};
       result.error.issues.forEach((issue) => {
@@ -26,4 +26,4 @@ export function useFormValidation<T extends Record<string, unknown>>(schema: z.Z
   };
 
   return { validate, errors };
-} 
+}

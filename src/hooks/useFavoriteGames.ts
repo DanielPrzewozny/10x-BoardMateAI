@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import type { GameRecommendation } from '@/types';
-import { supabaseClient } from '@/db/supabase.client';
-import { GamesService } from '@/lib/services/games.service';
+import { useState } from "react";
+import type { GameRecommendation } from "@/types";
+import { supabaseClient } from "@/db/supabase.client";
+import { GamesService } from "@/lib/services/games.service";
 
 interface UseFavoriteGamesResult {
   addToFavorites: (game: GameRecommendation) => Promise<boolean>;
@@ -21,9 +21,9 @@ export function useFavoriteGames(): UseFavoriteGamesResult {
 
     try {
       const { data: userData } = await supabaseClient.auth.getUser();
-      
+
       if (!userData || !userData.user) {
-        throw new Error('Użytkownik nie jest zalogowany');
+        throw new Error("Użytkownik nie jest zalogowany");
       }
 
       // Dodaj lub znajdź grę w bazie
@@ -34,7 +34,7 @@ export function useFavoriteGames(): UseFavoriteGamesResult {
 
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Nieznany błąd podczas dodawania do ulubionych';
+      const errorMessage = err instanceof Error ? err.message : "Nieznany błąd podczas dodawania do ulubionych";
       setError(errorMessage);
       return false;
     } finally {
@@ -48,9 +48,9 @@ export function useFavoriteGames(): UseFavoriteGamesResult {
 
     try {
       const { data: userData } = await supabaseClient.auth.getUser();
-      
+
       if (!userData || !userData.user) {
-        throw new Error('Użytkownik nie jest zalogowany');
+        throw new Error("Użytkownik nie jest zalogowany");
       }
 
       // Znajdź ID gry
@@ -61,7 +61,7 @@ export function useFavoriteGames(): UseFavoriteGamesResult {
 
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Nieznany błąd podczas usuwania z ulubionych';
+      const errorMessage = err instanceof Error ? err.message : "Nieznany błąd podczas usuwania z ulubionych";
       setError(errorMessage);
       return false;
     } finally {
@@ -73,6 +73,6 @@ export function useFavoriteGames(): UseFavoriteGamesResult {
     addToFavorites,
     removeFromFavorites,
     isLoading,
-    error
+    error,
   };
-} 
+}

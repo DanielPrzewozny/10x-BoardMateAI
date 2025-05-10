@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import RecommendationForm from '@/components/RecommendationForm';
-import RecommendationList from '@/components/RecommendationList';
-import { useRecommendations } from '@/hooks/useRecommendations';
-import type { GameDescriptionCommand } from '@/types';
+import { useState } from "react";
+import RecommendationForm from "@/components/RecommendationForm";
+import RecommendationList from "@/components/RecommendationList";
+import { useRecommendations } from "@/hooks/useRecommendations";
+import type { GameDescriptionCommand } from "@/types";
 
 export default function RecommendationContainer() {
   const { recommendations, isLoading, error, getRecommendations } = useRecommendations();
@@ -15,19 +15,10 @@ export default function RecommendationContainer() {
 
   return (
     <div className="space-y-4">
-      {!isFormSubmitted || error ? (
-        <RecommendationForm 
-          onSubmit={handleSubmit} 
-          isLoading={isLoading} 
-        />
-      ) : null}
+      {!isFormSubmitted || error ? <RecommendationForm onSubmit={handleSubmit} isLoading={isLoading} /> : null}
 
       {(isLoading || recommendations || error) && (
-        <RecommendationList 
-          recommendations={recommendations}
-          isLoading={isLoading}
-          error={error}
-        />
+        <RecommendationList recommendations={recommendations} isLoading={isLoading} error={error} />
       )}
 
       {isFormSubmitted && recommendations && !isLoading && (
@@ -42,4 +33,4 @@ export default function RecommendationContainer() {
       )}
     </div>
   );
-} 
+}

@@ -17,6 +17,12 @@ BoardMate AI is an application designed to help users find the perfect board gam
 - **AI:**
   - [Openrouter.ai](https://openrouter.ai) for communication with various AI models.
 
+- **Testing:**
+  - [Vitest](https://vitest.dev) for unit and integration tests.
+  - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for testing React components.
+  - [Playwright](https://playwright.dev) for end-to-end (E2E) tests.
+  - [MSW](https://mswjs.io) (Mock Service Worker) for API mocking.
+
 - **CI/CD and Hosting:**
   - [GitHub Actions](https://github.com/features/actions) for CI/CD pipelines.
   - [DigitalOcean](https://www.digitalocean.com) for hosting via Docker images.
@@ -41,6 +47,12 @@ To set up the project locally, follow these steps:
 - `npm run dev`: Starts the development server.
 - `npm run build`: Builds the application for production.
 - `npm run start`: Starts the production server.
+- `npm run test`: Runs unit tests with Vitest in watch mode.
+- `npm run test:run`: Runs unit tests once.
+- `npm run test:coverage`: Runs unit tests with coverage report.
+- `npm run test:e2e`: Runs end-to-end tests with Playwright.
+- `npm run test:e2e:ui`: Runs end-to-end tests with Playwright UI.
+- `npm run test:e2e:debug`: Runs end-to-end tests in debug mode.
 
 ## Project Scope
 The project will include:

@@ -1,6 +1,6 @@
-const ENCRYPTION_KEY = 'boardmate-storage-key'; // To powinno być w zmiennych środowiskowych
+const ENCRYPTION_KEY = "boardmate-storage-key"; // To powinno być w zmiennych środowiskowych
 
-const isClient = typeof window !== 'undefined';
+const isClient = typeof window !== "undefined";
 
 export const secureStorage = {
   // Szyfrowanie danych przed zapisem
@@ -9,15 +9,14 @@ export const secureStorage = {
       const jsonString = JSON.stringify(data);
       // Używamy Base64 do podstawowego zabezpieczenia i utrudnienia odczytu
       const encoded = btoa(
-        encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g,
-          function toSolidBytes(match, p1) {
-            return String.fromCharCode(Number('0x' + p1));
-          })
+        encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, function toSolidBytes(match, p1) {
+          return String.fromCharCode(Number("0x" + p1));
+        })
       );
       return encoded;
     } catch (e) {
-      console.error('Encryption error:', e);
-      return '';
+      console.error("Encryption error:", e);
+      return "";
     }
   },
 
@@ -25,13 +24,16 @@ export const secureStorage = {
   decrypt(encoded: string): any {
     try {
       const jsonString = decodeURIComponent(
-        atob(encoded).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join('')
+        atob(encoded)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
       );
       return JSON.parse(jsonString);
     } catch (e) {
-      console.error('Decryption error:', e);
+      console.error("Decryption error:", e);
       return null;
     }
   },
@@ -55,5 +57,5 @@ export const secureStorage = {
   removeItem(key: string): void {
     if (!isClient) return;
     localStorage.removeItem(key);
-  }
-}; 
+  },
+};
